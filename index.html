@@ -1,534 +1,26 @@
-import { useState } from "react";
-
-const RED="#FCEBEB",REDB="#A32D2D",REDM="#F09595";
-const GRN="#E1F5EE",GRNB="#085041",GRNM="#1D9E75";
-const BLU="#E6F1FB",BLUB="#0C447C",BLUM="#185FA5";
-const AMB="#FAEEDA",AMBB="#633806",AMBM="#BA7517";
-const GRY="#F1EFE8",GRYB="#444441",GRYM="#888780";
-const PRP="#EEEDFE",PRPB="#26215C",PRPM="#534AB7";
-
-const sections=[
-  {id:"bienvenida",label:"Bienvenida",icon:"👋"},
-  {id:"que",label:"¿Qué es Claude?",icon:"🤖"},
-  {id:"chatgpt",label:"ChatGPT → Claude",icon:"🔄"},
-  {id:"seguridad",label:"Reglas de seguridad",icon:"🔒"},
-  {id:"iso",label:"ISO 27001",icon:"🛡️"},
-  {id:"prompts",label:"Cómo hacer prompts",icon:"✏️"},
-  {id:"ppt",label:"Claude en PPT y Excel",icon:"📊"},
-  {id:"roles",label:"Por rol",icon:"🎯"},
-  {id:"colaborar",label:"Colaborar y compartir",icon:"🤝"},
-  {id:"casos",label:"Casos de uso",icon:"💡"},
-  {id:"integraciones",label:"Integraciones",icon:"🔗"},
-  {id:"reglas",label:"Qué hacer y no hacer",icon:"✅"},
-  {id:"quiz",label:"Verificación final",icon:"🎯"},
-];
-
-const quizData=[
-  {q:"Un cliente te envía un contrato en PDF para revisar. ¿Puedes pegar el texto completo en Claude?",a:1,opts:["Sí, Claude puede ayudar a revisarlo","No — la información de clientes no debe compartirse con herramientas de IA","Solo si el cliente lo autoriza por escrito"],explanation:"Documentos de clientes, contratos y cualquier dato de terceros no deben pegarse en Claude. Esto también es un requerimiento de nuestra certificación ISO 27001. Describe la situación de forma genérica en su lugar."},
-  {q:"Tienes historial útil en ChatGPT con prompts y contexto de proyectos. ¿Qué debes hacer?",a:2,opts:["Seguir usando ChatGPT para esos proyectos — ya tiene el contexto","Borrar todo inmediatamente","Exportar tu historial de ChatGPT, extraer los prompts útiles y reconstruirlos como Proyectos en Claude"],explanation:"Las cuentas personales de IA ya no están permitidas para trabajo. Exporta tu historial, extrae lo útil y migralo a Proyectos de Claude para que el contexto quede en la cuenta de la empresa."},
-  {q:"Estás usando Claude en PowerPoint para armar una propuesta de Okta. ¿Qué debes hacer antes de escribir tu prompt?",a:1,opts:["Solo describe lo que quieres y deja que Claude lo resuelva","Sube o pega tu plantilla, lineamientos de marca y contenido existente — luego escribe el prompt","Abre una presentación en blanco y pide a Claude que empiece desde cero"],explanation:"Claude en PowerPoint funciona mejor cuando tiene contexto. Agrega tu plantilla, notas de marca y contenido existente antes de hacer el prompt."},
-  {q:"Bajo nuestra certificación ISO 27001, ¿qué debes hacer si identificas un posible incidente de seguridad relacionado con el uso de Claude?",a:1,opts:["Resolverlo tú mismo sin reportarlo para no generar alarma","Reportarlo de inmediato a tu administrador o al responsable de seguridad de la información","Esperar a ver si tiene consecuencias antes de reportar"],explanation:"ISO 27001 requiere que todos los incidentes de seguridad — incluyendo los relacionados con herramientas de IA — se reporten de inmediato. No manejes incidentes de seguridad de forma individual."},
-  {q:"Claude te da una respuesta muy segura sobre una configuración de Okta. ¿Qué haces?",a:2,opts:["La uso — Claude conoce bien Okta","La marco para revisión y la verifico con documentación oficial o con un compañero","Le pido a Claude que lo confirme una vez más"],explanation:"Claude puede inventar detalles de configuración, comportamientos específicos por versión y sintaxis de APIs de Okta. Siempre valida outputs técnicos contra documentación oficial de Okta o con un compañero experto."},
-];
-
-function Chip({label,col,tc}){return <span style={{background:col,color:tc,fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:20,display:"inline-block",marginRight:4,marginBottom:4}}>{label}</span>;}
-function Card({col,tc,mc,title,children,border}){return <div style={{background:col,border:`1.5px solid ${border||mc}`,borderRadius:12,padding:"1.1rem 1.3rem",marginBottom:10}}><div style={{fontSize:13,fontWeight:700,color:tc,marginBottom:8}}>{title}</div><div style={{fontSize:13,color:mc,lineHeight:1.65}}>{children}</div></div>;}
-function Bullets({items,col}){return <>{items.map((i,idx)=><div key={idx} style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:5}}><div style={{width:5,height:5,borderRadius:"50%",background:col,marginTop:7,flexShrink:0}}/><div style={{fontSize:13,color:col,lineHeight:1.5}}>{i}</div></div>)}</>;}
-
-function Bienvenida(){
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>TEC360 · Entrenamiento interno</div>
-    <h1 style={{fontSize:40,fontWeight:700,lineHeight:1.15,marginBottom:"1rem",color:"#111"}}>Usando Claude<br/>en TEC360</h1>
-    <p style={{fontSize:16,color:"#555",lineHeight:1.7,maxWidth:520,marginBottom:"1.5rem"}}>Todo lo que necesitas saber para usar Claude de forma efectiva y segura. ~15 minutos. Lee todas las secciones — especialmente <strong style={{color:REDB}}>Reglas de seguridad</strong> e <strong style={{color:PRPB}}>ISO 27001</strong>.</p>
-    <div style={{background:RED,border:`1.5px solid ${REDM}`,borderRadius:10,padding:"10px 16px",maxWidth:580,marginBottom:"1rem"}}>
-      <div style={{fontSize:13,fontWeight:700,color:REDB,marginBottom:3}}>⛔ Vigente de inmediato</div>
-      <div style={{fontSize:13,color:REDB,lineHeight:1.6}}>Las cuentas personales de herramientas de IA (ChatGPT, Gemini, Copilot, etc.) <strong>ya no están permitidas para tareas de trabajo</strong>. Todo el uso de IA va a través de la cuenta empresarial de Claude.</div>
-    </div>
-    <div style={{background:PRP,border:`1.5px solid ${PRPM}`,borderRadius:10,padding:"10px 16px",maxWidth:580,marginBottom:"1.5rem"}}>
-      <div style={{fontSize:13,fontWeight:700,color:PRPB,marginBottom:3}}>🛡️ Somos ISO 27001 certificados</div>
-      <div style={{fontSize:13,color:PRPM,lineHeight:1.6}}>El uso de Claude en TEC360 debe alinearse con nuestra certificación ISO 27001. Las reglas de esta guía no son opcionales — son parte de nuestro compromiso de seguridad de la información.</div>
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,maxWidth:560}}>
-      {[
-        {col:GRN,tc:GRNB,mc:GRNM,t:"Lo que aprenderás",b:"Cómo funciona Claude, los plugins, uso por rol y cómo colaborar."},
-        {col:RED,tc:REDB,mc:REDM,t:"Lo que debes saber",b:"Reglas de seguridad, ISO 27001 y la política de migración de ChatGPT."},
-        {col:BLU,tc:BLUB,mc:BLUM,t:"Habilidades prácticas",b:"Prompts, plugins de PowerPoint y Excel, Proyectos y colaboración."},
-        {col:AMB,tc:AMBB,mc:AMBM,t:"Verificación al final",b:"5 preguntas de escenarios. Complétala antes de usar Claude para trabajo."},
-      ].map(c=><div key={c.t} style={{background:c.col,borderRadius:12,padding:"0.9rem 1.1rem"}}><div style={{fontSize:13,fontWeight:700,color:c.tc,marginBottom:3}}>{c.t}</div><div style={{fontSize:12,color:c.mc,lineHeight:1.5}}>{c.b}</div></div>)}
-    </div>
-  </div>;
-}
-
-function QueEs(){
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 1</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"1rem"}}>¿Qué es Claude?</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:580,marginBottom:"1.5rem"}}>Claude es un asistente de inteligencia artificial desarrollado por Anthropic. Piénsalo como un colega extremadamente capaz que lee, escribe, analiza, programa y razona — pero al que necesitas supervisar con cuidado.</p>
-    <div style={{display:"flex",flexDirection:"column",gap:10,maxWidth:640}}>
-      <Card col={GRN} tc={GRNB} mc={GRNM} title="✅ Claude es muy bueno en">
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"3px 16px"}}>
-          {["Redactar y editar documentos","Resumir y extraer puntos clave","Escribir, revisar y explicar código","Lluvia de ideas y estructurar propuestas","Investigación y análisis competitivo","Traducción (Español mexicano ✓)","Armar presentaciones y propuestas de Okta","Conceptos de IAM, arquitectura y documentación"].map(i=><div key={i} style={{fontSize:13,color:GRNM,lineHeight:1.5,paddingLeft:12,position:"relative"}}><span style={{position:"absolute",left:0,top:7,width:5,height:5,borderRadius:"50%",background:GRNM,display:"block"}}/>{i}</div>)}
-        </div>
-      </Card>
-      <Card col={AMB} tc={AMBB} mc={AMBM} title="⚠️ Limitaciones reales — conócelas">
-        <Bullets col={AMBM} items={["Puede inventar cosas con mucha seguridad — siempre verifica outputs técnicos, legales y financieros","Puede no conocer las versiones más recientes de Okta o cambios recientes de producto","Sin internet por defecto — activa la búsqueda web cuando necesites información actual","Sin memoria entre conversaciones, a menos que uses Proyectos","No es abogado, contador ni experto en cumplimiento normativo"]}/>
-      </Card>
-      <div style={{background:"#111",borderRadius:10,padding:"12px 16px"}}>
-        <div style={{fontSize:13,color:"#fff",lineHeight:1.7}}>💡 <strong>El modelo mental correcto:</strong> Claude es un excelente primer borrador y compañero de pensamiento — no una respuesta definitiva. Aplica siempre tu propio juicio antes de usar su output para algo importante.</div>
-      </div>
-    </div>
-  </div>;
-}
-
-function ChatGPT(){
-  const [tab,setTab]=useState(0);
-  const tabs=["La política","Exporta tu historial","Migra el contexto","Reconstruye en Claude"];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:REDB,marginBottom:"0.5rem"}}>Sección 2 · Acción requerida</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Migración ChatGPT → Claude</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:580,marginBottom:"1.2rem"}}>Las cuentas personales de IA ya no están permitidas para trabajo. Esto es lo que debes hacer.</p>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {tabs.map((t,i)=><button key={i} onClick={()=>setTab(i)} style={{background:tab===i?"#111":"#f0f0f0",border:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:tab===i?"#fff":GRYB,fontFamily:"inherit"}}>{t}</button>)}
-    </div>
-    <div style={{maxWidth:640}}>
-      {tab===0&&<div>
-        <Card col={RED} tc={REDB} mc={REDB} title="⛔ La política — sin excepciones">
-          <Bullets col={REDB} items={["ChatGPT, Gemini, Microsoft Copilot y cualquier cuenta personal de IA están prohibidas para uso laboral de inmediato","Esto incluye tu suscripción personal de pago a ChatGPT Plus","Motivo: seguridad de datos, cumplimiento ISO 27001, trazabilidad y control de gasto","Incumplimiento = incidente de seguridad. Trátalo así."]}/>
-        </Card>
-        <Card col={AMB} tc={AMBB} mc={AMBB} title="Qué significa en la práctica">
-          <Bullets col={AMBB} items={["Todo contexto, prompts o recursos que construiste en ChatGPT deben migrarse a Claude","Tu cuenta de Claude empresarial ya está lista — credenciales con tu administrador","Tienes esta semana para migrar. Después, el uso de herramientas de IA personales para trabajo es una violación de política e ISO 27001."]}/>
-        </Card>
-      </div>}
-      {tab===1&&<div>
-        <Card col={BLU} tc={BLUB} mc={BLUM} title="Cómo exportar tu historial de ChatGPT">
-          {[
-            {step:"1",t:"Ve a Configuración de ChatGPT",d:"Haz clic en tu foto de perfil → Configuración → Controles de datos"},
-            {step:"2",t:"Solicita la exportación",d:"Haz clic en 'Exportar datos' → Confirma. OpenAI te enviará un enlace de descarga por correo en minutos u horas."},
-            {step:"3",t:"Descarga el ZIP",d:"Obtendrás un archivo conversations.json con todo tu historial de conversaciones."},
-            {step:"4",t:"Ábrelo y extrae lo útil",d:"Busca prompts, plantillas y contexto que quieras conservar. Solo extrae contenido tuyo — sin datos de clientes."},
-          ].map(s=><div key={s.step} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}><div style={{width:24,height:24,borderRadius:"50%",background:BLUM,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{s.step}</div><div><div style={{fontSize:13,fontWeight:700,color:BLUB}}>{s.t}</div><div style={{fontSize:13,color:BLUM,lineHeight:1.5}}>{s.d}</div></div></div>)}
-        </Card>
-        <div style={{background:AMB,borderRadius:10,padding:"10px 14px",fontSize:13,color:AMBB}}>⚠️ NO pegues conversaciones que contengan datos de clientes en Claude durante la migración. Extraer esa información violaría ISO 27001.</div>
-      </div>}
-      {tab===2&&<div>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="Qué vale la pena migrar">
-          <Bullets col={GRNM} items={["Plantillas de prompts que construiste y reutilizas (ej. estructuras de propuestas de Okta, formatos de correo)","System prompts o personas que creaste para tareas específicas","Marcos de trabajo y checklists que desarrollaste con ayuda de IA","Resúmenes de investigación que son tuyos (sin datos de clientes)"]}/>
-        </Card>
-        <Card col={RED} tc={REDB} mc={REDB} title="Qué NO traer — requerimiento ISO 27001">
-          <Bullets col={REDB} items={["Cualquier conversación con nombres, datos o documentos de clientes","Conversaciones con credenciales, claves de API o información de sistemas","Inteligencia competitiva obtenida bajo NDA","Cualquier información clasificada como confidencial o restringida"]}/>
-        </Card>
-      </div>}
-      {tab===3&&<div>
-        <Card col={PRP} tc={PRPB} mc={PRPM} title="Reconstruye tu contexto en Proyectos de Claude">
-          {[
-            {step:"1",t:"Crea un Proyecto",d:"En Claude, haz clic en 'Proyectos' en el menú izquierdo → Nuevo Proyecto. Nómbralo por función (ej. 'Propuestas Okta', 'Investigación IAM')."},
-            {step:"2",t:"Agrega tu contexto",d:"Pega tus plantillas de prompts migradas, lineamientos de marca o antecedentes del proyecto en la base de conocimiento del Proyecto."},
-            {step:"3",t:"Configura un system prompt",d:"En la configuración del Proyecto, agrega un system prompt que le diga a Claude tu rol, preferencias e instrucciones permanentes."},
-            {step:"4",t:"Empieza a conversar",d:"Cada conversación dentro del Proyecto hereda el contexto que configuraste. No necesitas volver a explicarte cada vez."},
-          ].map(s=><div key={s.step} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}><div style={{width:24,height:24,borderRadius:"50%",background:PRPM,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{s.step}</div><div><div style={{fontSize:13,fontWeight:700,color:PRPB}}>{s.t}</div><div style={{fontSize:13,color:PRPM,lineHeight:1.5}}>{s.d}</div></div></div>)}
-        </Card>
-      </div>}
-    </div>
-  </div>;
-}
-
-function Seguridad(){
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 3 · Lee con atención</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Reglas de seguridad</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:580,marginBottom:"0.8rem"}}>Claude es una herramienta de terceros. Todo lo que escribes se procesa externamente. Trátalo como una persona inteligente fuera de la empresa — no dentro de tu perímetro de confidencialidad.</p>
-    <div style={{background:PRP,border:`1.5px solid ${PRPM}`,borderRadius:10,padding:"10px 16px",maxWidth:640,marginBottom:"1rem"}}>
-      <div style={{fontSize:12,fontWeight:700,color:PRPB,marginBottom:3}}>🛡️ Nota ISO 27001</div>
-      <div style={{fontSize:13,color:PRPM,lineHeight:1.6}}>Estas reglas no son solo buenas prácticas — son requerimientos de nuestra certificación ISO 27001 (Control A.8 — Gestión de activos de información, Control A.6.3 — Concienciación y formación en seguridad). El incumplimiento se trata como un incidente de seguridad formal. Consulta la sección ISO 27001 para el detalle completo.</div>
-    </div>
-    <div style={{display:"flex",flexDirection:"column",gap:10,maxWidth:640}}>
-      <Card col={RED} tc={REDB} mc={REDB} title="🚫 NUNCA" border={REDM}>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"3px 16px"}}>
-          {["Nombres, contactos o datos identificadores de clientes","Contratos, SOWs o propuestas de clientes","Datos personales de empleados (salarios, IDs, salud)","Claves de API, contraseñas o credenciales","Estrategia confidencial (M&A, legal)","Código fuente o arquitectura de sistemas de clientes","Datos financieros de terceros"].map(i=><div key={i} style={{fontSize:13,color:REDB,lineHeight:1.5,paddingLeft:12,position:"relative"}}><span style={{position:"absolute",left:0,top:7,width:5,height:5,borderRadius:"50%",background:REDB,display:"block"}}/>{i}</div>)}
-        </div>
-      </Card>
-      <Card col={AMB} tc={AMBB} mc={AMBB} title="⚠️ Solo con precaución" border={AMBM}>
-        <Bullets col={AMBB} items={["Información financiera interna — usa rangos o %, no cifras exactas","Info de prospectos — describe el tipo, nunca el nombre","Documentos de estrategia interna — describe el tema, no pegues el documento","Temas de empleados — solo completamente anonimizados"]}/>
-      </Card>
-      <Card col={GRN} tc={GRNB} mc={GRNM} title="✅ Generalmente seguro" border={GRNM}>
-        <Bullets col={GRNM} items={["Tu propio texto que quieres mejorar o traducir","Preguntas de investigación genéricas sin contexto propietario","Código propio para herramientas internas (no de cliente)","Redactar plantillas, marcos de trabajo, estructuras de propuestas Okta","Lluvia de ideas sin contexto sensible"]}/>
-      </Card>
-      <div style={{background:"#111",borderRadius:10,padding:"12px 16px"}}>
-        <div style={{fontSize:13,color:"#fff",lineHeight:1.7}}>🔒 <strong>Ante la duda, no lo pegues.</strong> Describe la situación de forma genérica — Claude puede ayudarte con la forma de un problema sin necesitar los detalles confidenciales.</div>
-      </div>
-    </div>
-  </div>;
-}
-
-function ISO(){
-  const [tab,setTab]=useState(0);
-  const tabs=["¿Por qué importa?","Reglas de uso","Clasificación de info","Incidentes","Auditorías"];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:PRPM,marginBottom:"0.5rem"}}>Sección 4 · Obligatorio</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>ISO 27001 y el uso de Claude</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:600,marginBottom:"1.2rem"}}>TEC360 es una empresa certificada en ISO 27001 — el estándar internacional de seguridad de la información. Esto nos da una ventaja competitiva enorme. Mantenerla es responsabilidad de todos.</p>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {tabs.map((t,i)=><button key={i} onClick={()=>setTab(i)} style={{background:tab===i?PRPM:"#f0f0f0",border:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:tab===i?"#fff":GRYB,fontFamily:"inherit"}}>{t}</button>)}
-    </div>
-    <div style={{maxWidth:660}}>
-      {tab===0&&<div>
-        <Card col={PRP} tc={PRPB} mc={PRPM} title="🛡️ ¿Qué es ISO 27001 y por qué nos importa?">
-          <Bullets col={PRPM} items={["ISO 27001 es el estándar internacional para la gestión de seguridad de la información","Significa que TEC360 ha demostrado, ante auditores externos, que protegemos la información de forma sistemática y controlada","Nos permite vender a clientes enterprise que lo exigen como requisito","Nos pone al nivel de empresas mucho más grandes que nosotros","La certificación no es permanente — se mantiene con disciplina diaria y auditorías regulares"]}/>
-        </Card>
-        <Card col={AMB} tc={AMBB} mc={AMBM} title="¿Qué tiene que ver con Claude?">
-          <Bullets col={AMBM} items={["Claude es una herramienta de terceros que procesa información — eso la hace relevante para ISO 27001","El uso inadecuado de Claude puede constituir un incidente de seguridad de la información","Cada uno de nosotros es responsable de usar Claude dentro de los controles establecidos","Estas reglas no son opcionales — forman parte de nuestro Sistema de Gestión de Seguridad de la Información (SGSI)"]}/>
-        </Card>
-      </div>}
-      {tab===1&&<div>
-        <Card col={PRP} tc={PRPB} mc={PRPM} title="Reglas de uso alineadas a ISO 27001">
-          {[
-            {ctrl:"A.8 — Gestión de activos",rule:"Solo información clasificada como 'Pública' o 'Interna general' puede ingresarse a Claude. Información 'Confidencial' o 'Restringida' nunca debe procesarse en herramientas de IA de terceros."},
-            {ctrl:"A.5 — Políticas de seguridad",rule:"El uso de Claude está sujeto a la política de uso aceptable de TEC360. El incumplimiento se reporta y registra como parte del SGSI."},
-            {ctrl:"A.6 — Personas y seguridad",rule:"Todos los empleados deben completar este entrenamiento antes de usar Claude para tareas de trabajo. El quiz al final es el registro de que cumpliste."},
-            {ctrl:"A.9 — Control de acceso",rule:"Accede a Claude únicamente con tu cuenta empresarial asignada. No compartas accesos, no crees cuentas personales paralelas."},
-            {ctrl:"A.12 — Seguridad operacional",rule:"No conectes Claude a sistemas de producción, bases de datos de clientes ni entornos de infraestructura sin autorización explícita del responsable de seguridad."},
-          ].map(r=><div key={r.ctrl} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:12}}><div style={{background:PRPM,borderRadius:6,padding:"3px 8px",fontSize:10,fontWeight:700,color:"#fff",whiteSpace:"nowrap",flexShrink:0,marginTop:2}}>{r.ctrl}</div><div style={{fontSize:13,color:PRPM,lineHeight:1.6}}>{r.rule}</div></div>)}
-        </Card>
-      </div>}
-      {tab===2&&<div>
-        <Card col={PRP} tc={PRPB} mc={PRPM} title="Clasificación de información en TEC360">
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {[
-              {nivel:"🟢 Pública",desc:"Información que puede compartirse libremente. Contenido de marketing, información general de productos Okta, descripciones de servicios.",claude:"✅ Puedes usar en Claude sin restricción"},
-              {nivel:"🟡 Interna general",desc:"Información de uso interno que no es sensible. Plantillas internas, procesos generales, materiales de entrenamiento.",claude:"✅ Puedes usar en Claude con precaución básica"},
-              {nivel:"🟠 Confidencial",desc:"Información sensible del negocio. Propuestas a clientes, estrategia comercial, información financiera interna, datos de empleados.",claude:"⚠️ Describe de forma genérica — nunca pegues el documento"},
-              {nivel:"🔴 Restringida",desc:"Información de máxima sensibilidad. Datos personales identificables, contratos firmados, credenciales, información de auditoría.",claude:"🚫 Nunca en Claude bajo ninguna circunstancia"},
-            ].map(n=><div key={n.nivel} style={{background:"rgba(255,255,255,0.5)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:13,fontWeight:700,color:PRPB,marginBottom:3}}>{n.nivel}</div><div style={{fontSize:12,color:PRPM,lineHeight:1.5,marginBottom:4}}>{n.desc}</div><div style={{fontSize:12,fontWeight:700,color:PRPB}}>{n.claude}</div></div>)}
-          </div>
-        </Card>
-      </div>}
-      {tab===3&&<div>
-        <Card col={RED} tc={REDB} mc={REDB} title="¿Qué es un incidente de seguridad relacionado con Claude?">
-          <Bullets col={REDB} items={["Pegar información confidencial o restringida en Claude","Compartir tu acceso o credenciales con otra persona","Conectar Claude a sistemas no autorizados","Usar una cuenta personal de IA para tareas de trabajo","Recibir o detectar output de Claude que exponga datos sensibles","Sospechar que Claude fue manipulado para obtener información (prompt injection)"]}/>
-        </Card>
-        <Card col={AMB} tc={AMBB} mc={AMBM} title="¿Qué hacer si detectas un incidente?">
-          {[
-            {step:"1",t:"No lo manejes solo",d:"Aunque parezca menor, no intentes resolverlo sin reportarlo."},
-            {step:"2",t:"Reporta de inmediato",d:"Notifica a tu líder directo y al responsable de seguridad de la información. ISO 27001 exige registro formal de incidentes."},
-            {step:"3",t:"Documenta lo que pasó",d:"Qué hiciste, qué información estuvo involucrada, cuándo ocurrió, qué herramienta usaste."},
-            {step:"4",t:"No borres evidencia",d:"No elimines conversaciones, capturas ni archivos relacionados hasta que se indique."},
-          ].map(s=><div key={s.step} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}><div style={{width:22,height:22,borderRadius:"50%",background:AMBM,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{s.step}</div><div><div style={{fontSize:13,fontWeight:700,color:AMBB}}>{s.t}</div><div style={{fontSize:13,color:AMBB,lineHeight:1.5}}>{s.d}</div></div></div>)}
-        </Card>
-      </div>}
-      {tab===4&&<div>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="Auditorías — lo que debes saber">
-          <Bullets col={GRNM} items={["TEC360 es auditada regularmente para mantener la certificación ISO 27001","Los auditores pueden revisar políticas de uso de herramientas de terceros, incluyendo IA","Este entrenamiento y el quiz al final son registros formales de que cumpliste con la formación requerida","Tu uso de Claude a través de la cuenta empresarial genera un historial — úsalo de forma que te sientas cómodo mostrándolo en una auditoría","Si tienes dudas sobre si algo cumple con ISO 27001, pregunta antes de hacerlo"]}/>
-        </Card>
-        <div style={{background:PRP,border:`1.5px solid ${PRPM}`,borderRadius:10,padding:"12px 16px"}}>
-          <div style={{fontSize:13,color:PRPB,lineHeight:1.7}}>🛡️ <strong>La regla de oro:</strong> Si no te sentirías cómodo mostrando esa conversación de Claude en una auditoría externa, no la tengas.</div>
-        </div>
-      </div>}
-    </div>
-  </div>;
-}
-
-function Prompts(){
-  const [active,setActive]=useState(0);
-  const tips=[
-    {title:"Sé específico",bad:"Ayúdame a escribir un correo.",good:"Escribe un correo profesional pero cálido para un prospecto que asistió a nuestra demo de Okta la semana pasada pero no ha respondido. Menos de 100 palabras. Sin presionar.",why:"Los prompts vagos dan resultados vagos. Especifica el destinatario, tono, propósito, longitud y cualquier restricción."},
-    {title:"Dale un rol",bad:"Explica esta arquitectura.",good:"Eres un arquitecto senior de IAM especializado en Okta. Revisa esta arquitectura propuesta e identifica los 3 principales riesgos de seguridad que un cliente debe atender antes del go-live.",why:"Darle un rol a Claude ancla su tono, nivel de experiencia y profundidad de respuesta."},
-    {title:"Define el formato",bad:"Resume este documento.",good:"Resume los puntos clave en 5 bullets, cada uno de menos de 20 palabras. Luego dame un resumen general en una sola oración y señala cualquier riesgo.",why:"Sin instrucciones de formato, Claude adivina. Con ellas, obtienes exactamente lo que necesitas."},
-    {title:"Itera, no reinicies",bad:"[Empezar una conversación nueva y volver a intentar desde cero]",good:"'Hazlo más corto.' / 'Ponlo más formal.' / 'Agrega una sección sobre el precio de licencias de Okta.'",why:"Claude mantiene el contexto en una conversación. Construye sobre lo que está funcionando en lugar de empezar de cero."},
-    {title:"Pídele que razone primero",bad:"¿Cuál es el mejor enfoque de integración para este cliente?",good:"Antes de darme una recomendación, lista los pros y contras de al menos 3 enfoques de integración con Okta para este caso, luego dame tu recomendación con justificación.",why:"Pedirle a Claude que razone antes de concluir mejora significativamente la precisión — especialmente en preguntas técnicas y estratégicas."},
-  ];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 5</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Cómo hacer buenos prompts</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:560,marginBottom:"1.2rem"}}>La calidad del output de Claude es directamente proporcional a la calidad de tu prompt.</p>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {tips.map((t,i)=><button key={i} onClick={()=>setActive(i)} style={{background:active===i?"#111":GRY,border:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:active===i?"#fff":GRYB,fontFamily:"inherit"}}>{i+1}. {t.title}</button>)}
-    </div>
-    <div style={{maxWidth:640}}>
-      <div style={{background:RED,borderRadius:12,padding:"1rem 1.25rem",marginBottom:8}}>
-        <div style={{fontSize:11,fontWeight:700,color:REDB,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:5}}>❌ Prompt débil</div>
-        <div style={{fontSize:14,color:REDB,lineHeight:1.6,fontStyle:"italic"}}>"{tips[active].bad}"</div>
-      </div>
-      <div style={{background:GRN,borderRadius:12,padding:"1rem 1.25rem",marginBottom:8}}>
-        <div style={{fontSize:11,fontWeight:700,color:GRNB,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:5}}>✅ Prompt fuerte</div>
-        <div style={{fontSize:14,color:GRNB,lineHeight:1.6,fontStyle:"italic"}}>"{tips[active].good}"</div>
-      </div>
-      <div style={{background:BLU,borderRadius:12,padding:"1rem 1.25rem"}}>
-        <div style={{fontSize:11,fontWeight:700,color:BLUB,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:5}}>💡 Por qué importa</div>
-        <div style={{fontSize:14,color:BLUM,lineHeight:1.6}}>{tips[active].why}</div>
-      </div>
-    </div>
-  </div>;
-}
-
-function PPT(){
-  const [tab,setTab]=useState(0);
-  const tabs=["Resumen","Claude en PowerPoint","Claude en Excel","Configurar assets","Qué hacer y no hacer"];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 6</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Claude en PowerPoint y Excel</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:580,marginBottom:"1.2rem"}}>Dos de los plugins más poderosos de Claude — especialmente para propuestas y presentaciones de Okta.</p>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {tabs.map((t,i)=><button key={i} onClick={()=>setTab(i)} style={{background:tab===i?"#111":"#f0f0f0",border:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:tab===i?"#fff":GRYB,fontFamily:"inherit"}}>{t}</button>)}
-    </div>
-    <div style={{maxWidth:660}}>
-      {tab===0&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        <Card col={BLU} tc={BLUB} mc={BLUM} title="📊 Claude en PowerPoint">
-          <Bullets col={BLUM} items={["Construye propuestas de Okta desde cero o mejora decks existentes","Reestructura contenido, corrige formato, reescribe textos","Genera decks ejecutivos completos desde un brief","Traduce presentaciones enteras al español al instante","Ideal para: Ventas, diseño, consultores, propuestas"]}/>
-        </Card>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="📈 Claude en Excel">
-          <Bullets col={GRNM} items={["Construye fórmulas, limpia datos, estructura modelos","Genera tablas dinámicas y recomendaciones de gráficas","Automatiza formatos financieros repetitivos","Audita hojas existentes en busca de errores","Ideal para: Finanzas, admin, gerentes de proyecto"]}/>
-        </Card>
-        <div style={{gridColumn:"1/-1",background:AMB,borderRadius:12,padding:"1rem 1.25rem"}}>
-          <div style={{fontSize:13,fontWeight:700,color:AMBB,marginBottom:5}}>⚠️ Principio clave para ambos plugins</div>
-          <div style={{fontSize:13,color:AMBB,lineHeight:1.65}}>El contexto lo es todo. Mientras más le des a Claude antes de hacer el prompt — tu plantilla, lineamientos de marca, contenido existente, la audiencia — mejor será el resultado. Nunca hagas un prompt en contexto vacío si puedes evitarlo.</div>
-        </div>
-      </div>}
-      {tab===1&&<div>
-        <Card col={BLU} tc={BLUB} mc={BLUM} title="Prompts de inicio — Claude en PowerPoint">
-          {[
-            {role:"Ventas / propuesta Okta",prompt:"Estoy armando una propuesta para una implementación de Okta Workforce Identity. El cliente es una empresa de [industria] con [X] empleados. Su principal preocupación es [pain point, ej. gestión de accesos, cumplimiento, SSO]. Usa la estructura del slide 1 como plantilla. Construye slides para: resumen ejecutivo, diagnóstico del problema, nuestra solución con Okta, equipo, cronograma e inversión."},
-            {role:"Consultor",prompt:"Reestructura esta presentación para seguir una narrativa de problema → insight → solución con Okta → prueba de valor → llamada a acción. Conserva todo el contenido existente pero reordena y reescribe los títulos para que cada slide tenga un mensaje claro."},
-            {role:"Diseño / marketing",prompt:"Revisa cada slide de esta presentación y señala inconsistencias de formato — tamaños de fuente, alineación, espaciado, uso de colores. Luego corrígelos para que coincidan con el estilo del slide 2."},
-            {role:"Admin / operaciones",prompt:"Convierte estas notas de reunión en un slide limpio: título, 3 decisiones clave, tabla de action items con responsable y fecha límite, y una sección de próximos pasos."},
-          ].map(e=><div key={e.role} style={{marginBottom:12}}><Chip label={e.role} col={BLU} tc={BLUB}/><div style={{background:"#fff",border:"1px solid #B5D4F4",borderRadius:8,padding:"8px 12px",fontSize:12,color:BLUM,lineHeight:1.65,fontStyle:"italic",marginTop:4}}>"{e.prompt}"</div></div>)}
-        </Card>
-      </div>}
-      {tab===2&&<div>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="Prompts de inicio — Claude en Excel">
-          {[
-            {role:"Finanzas / admin",prompt:"Construye un rastreador mensual de gastos con columnas para fecha, proveedor, categoría, monto, entidad y notas. Agrega una pestaña de resumen con totales por categoría. Usa formato condicional para resaltar cualquier fila que supere $1,000."},
-            {role:"Gerente de proyecto",prompt:"Tengo esta lista de tareas de proyecto [pega la lista]. Construye un tracker con columnas para tarea, responsable, estatus (no iniciado / en progreso / terminado), fecha límite y prioridad. Agrega una fila de resumen con el % de avance."},
-            {role:"Finanzas",prompt:"Revisa estas fórmulas en la columna D y dime si alguna está rota o es inconsistente con el patrón de las filas 2 a 10. Si hay errores, corrígelos y explica qué estaba mal."},
-            {role:"Ops / admin",prompt:"Limpia estos datos: elimina duplicados, estandariza el formato de fecha a DD/MM/AAAA, capitaliza todos los nombres correctamente y señala las filas con valores faltantes en las columnas B o C."},
-          ].map(e=><div key={e.role} style={{marginBottom:12}}><Chip label={e.role} col={GRN} tc={GRNB}/><div style={{background:"#fff",border:"1px solid #9FE1CB",borderRadius:8,padding:"8px 12px",fontSize:12,color:GRNB,lineHeight:1.65,fontStyle:"italic",marginTop:4}}>"{e.prompt}"</div></div>)}
-        </Card>
-      </div>}
-      {tab===3&&<div>
-        <Card col={PRP} tc={PRPB} mc={PRPM} title="Cómo configurar assets antes de hacer el prompt">
-          {[
-            {step:"1",t:"Abre tu plantilla o archivo",d:"Para PowerPoint: abre tu archivo de plantilla con branding antes de hacer el prompt. Para Excel: abre tu hoja de trabajo. Claude trabaja sobre lo que está abierto."},
-            {step:"2",t:"Pega los lineamientos de marca",d:"En tu primer mensaje, pega o describe tus reglas de marca: colores, fuentes, tono de voz, reglas de colocación de logo. Hazlo una vez por sesión."},
-            {step:"3",t:"Agrega el contenido existente",d:"Pega cualquier texto, datos o estructura existente con la que quieres que Claude trabaje. Mientras más vea, más consistente será el resultado."},
-            {step:"4",t:"Describe la audiencia",d:"Dile a Claude quién verá esto. 'Director de TI de una empresa manufacturera' produce un resultado diferente que 'equipo interno de ventas'. Siempre especifica."},
-            {step:"5",t:"Luego da la tarea",d:"Solo después de configurar el contexto, da a Claude la instrucción específica. Usará todo lo que le diste para producir un resultado mucho más relevante."},
-          ].map(s=><div key={s.step} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}><div style={{width:22,height:22,borderRadius:"50%",background:PRPM,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{s.step}</div><div><div style={{fontSize:13,fontWeight:700,color:PRPB}}>{s.t}</div><div style={{fontSize:13,color:PRPM,lineHeight:1.5}}>{s.d}</div></div></div>)}
-        </Card>
-      </div>}
-      {tab===4&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="✅ Hacer">
-          <Bullets col={GRNM} items={["Configurar contexto antes de cada sesión","Subir tu plantilla antes de hacer el prompt","Especificar la audiencia y el propósito","Iterar — pide a Claude que refine, no que reinicie","Revisar cada output antes de compartirlo","Usar para primeros borradores, estructura y formato"]}/>
-        </Card>
-        <Card col={RED} tc={REDB} mc={REDB} title="🚫 No hacer">
-          <Bullets col={REDB} items={["Pegar datos de clientes en slides o tablas","Compartir presentaciones con info de clientes vía Claude","Usar el output de Claude sin revisarlo","Esperar diseño perfecto en el primer intento","Pegar credenciales o datos de cuentas financieras","Entregar slides generadas por IA sin editar"]}/>
-        </Card>
-      </div>}
-    </div>
-  </div>;
-}
-
-function Roles(){
-  const [tab,setTab]=useState(0);
-  const roles=[
-    {label:"Ingenieros / Técnicos",col:PRP,tc:PRPB,mc:PRPM,items:[
-      {t:"Revisión de arquitectura Okta",p:"Eres un arquitecto senior de IAM especializado en Okta. Revisa esta arquitectura propuesta e identifica: (1) brechas de seguridad, (2) problemas de escalabilidad, (3) desviaciones de las mejores prácticas de Okta. [pega el diagrama o descripción]"},
-      {t:"Documentación técnica",p:"Escribe documentación técnica para esta configuración de Okta. Incluye: propósito, prerrequisitos, pasos de configuración, comportamiento esperado y errores comunes con soluciones. Audiencia: ingenieros de nivel medio."},
-      {t:"Ayuda con debugging",p:"Estoy obteniendo este error al configurar Okta: [mensaje de error]. Esta es mi configuración actual: [pega — sin datos de clientes]. ¿Qué lo está causando y cuáles son las soluciones más probables?"},
-      {t:"Respuesta técnica a RFP",p:"Redacta la sección de respuesta técnica para este RFP. Nuestra solución usa Okta con [módulos/productos]. Los requerimientos del cliente son: [lista]. Enfócate en cómo cumplimos cada requerimiento — sé específico, no genérico."},
-      {t:"Revisión de seguridad",p:"Revisa este flujo de autenticación de Okta e identifica vulnerabilidades de seguridad, riesgos de manejo de tokens o desviaciones de las mejores prácticas actuales de Okta. Sugiere mitigaciones específicas."},
-    ]},
-    {label:"Desarrolladores",col:BLU,tc:BLUB,mc:BLUM,items:[
-      {t:"Revisión de código",p:"Revisa este código de integración con la API de Okta en busca de bugs, vulnerabilidades de seguridad y problemas de rendimiento. Para cada problema: explica el issue, califica su severidad (bajo/medio/alto) y proporciona el código corregido. [pega el código]"},
-      {t:"Documentación de API",p:"Escribe documentación para este endpoint de integración con Okta. Incluye: descripción, método, URL, parámetros, esquema de respuesta, códigos de error y 2 ejemplos de solicitudes con respuestas. [pega el código]"},
-      {t:"Escritura de tests",p:"Escribe pruebas unitarias para esta función de autenticación con Okta. Cubre: happy path, casos límite y escenarios de fallo. Usa [framework]. Incluye comentarios explicando qué verifica cada prueba. [pega la función]"},
-      {t:"Explicar código heredado",p:"Explica qué hace este código de integración con Okta en lenguaje sencillo, como si se lo explicaras a un gerente de proyecto no técnico. Luego identifica riesgos obvios o áreas que deberían refactorizarse. [pega el código]"},
-      {t:"Scaffolding de integración",p:"Escribe una integración boilerplate entre [Sistema A] y Okta usando [lenguaje/SDK de Okta]. Incluye autenticación OAuth 2.0, manejo de errores, logging y comentarios inline. Que sea lista para producción."},
-    ]},
-    {label:"Consultores / PM",col:GRN,tc:GRNB,mc:GRNM,items:[
-      {t:"Estructura de propuesta Okta",p:"Ayúdame a estructurar una propuesta para una implementación de Okta [Workforce Identity / Customer Identity]. La principal preocupación del cliente es [X]. Nuestro diferenciador es [Y]. Incluye secciones para: resumen ejecutivo, diagnóstico del problema, nuestra solución, equipo, cronograma, inversión y por qué TEC360."},
-      {t:"Reporte de estatus",p:"Redacta un reporte de estatus para el cliente de un proyecto de implementación de Okta que está [en tiempo / en riesgo / retrasado]. Actualizaciones clave de esta semana: [lista]. Riesgos: [lista]. Menos de 300 palabras, profesional pero directo."},
-      {t:"Registro de riesgos",p:"Dado este contexto de proyecto de Okta: [descripción]. Identifica los 5 principales riesgos. Para cada uno: describe el riesgo, califica probabilidad e impacto (A/M/B) y sugiere una mitigación. Formato de tabla."},
-      {t:"Comunicación con stakeholders",p:"Redacta un correo a un stakeholder del cliente explicando que [hito / entrega] de la implementación de Okta ha cambiado debido a [razón]. Sé transparente pero sin alarmar. Sugiere un camino a seguir. Tono: profesional y orientado a soluciones."},
-      {t:"Diseño de taller de discovery",p:"Diseña una agenda de taller de discovery de 2 horas para una nueva implementación de Okta. Incluye: objetivos, ejercicios, preguntas a hacer, materiales necesarios y outputs esperados. Audiencia: dirección de TI y seguridad del cliente."},
-    ]},
-    {label:"Ventas / preventa",col:AMB,tc:AMBB,mc:AMBM,items:[
-      {t:"Correo de prospección",p:"Escribe un correo de prospección en frío para un [CISO / Director de TI] en una empresa de [industria]. Nuestra propuesta de valor: somos implementadores certificados de Okta y ayudamos a empresas a modernizar su gestión de identidades. Menos de 100 palabras. Sin buzzwords. Que se sienta humano."},
-      {t:"Manejo de objeciones Okta",p:"Un prospecto dijo: '[objeción sobre Okta, ej. es muy caro / ya tenemos Active Directory / no es prioridad ahora]'. Dame 3 formas de responder — directa, empática y de reencuadre. Menos de 50 palabras cada una. Honesto, sin presionar."},
-      {t:"Posicionamiento competitivo",p:"Compara Okta vs [Microsoft Entra / SailPoint / otro competidor] desde la perspectiva de un comprador de mediana empresa en México. ¿Qué haría que un CISO elija Okta? Sé honesto sobre fortalezas y áreas donde necesitamos argumentar diferente."},
-      {t:"Narrativa de deck ejecutivo",p:"Estoy armando una presentación para venderle una implementación de Okta a la alta dirección de una empresa de [industria]. Construye un arco narrativo: riesgo de negocio actual → costo de la inacción → cómo Okta resuelve → por qué TEC360 → llamada a acción."},
-      {t:"Preguntas de discovery",p:"Dame 10 preguntas de discovery para hacerle a un prospecto que está evaluando soluciones de IAM. El objetivo es entender su dolor actual, madurez de seguridad, proceso de decisión, presupuesto y si Okta es el fit correcto. Que no se sientan interrogados."},
-    ]},
-    {label:"Finanzas / admin",col:GRN,tc:GRNB,mc:GRNM,items:[
-      {t:"Categorización de gastos",p:"Tengo esta lista de transacciones de nuestro estado de cuenta AMEX. Categoriza cada una en: Viajes, Alimentos y Entretenimiento, Software y Suscripciones, Servicios Profesionales, Oficina y Suministros, u Otros. Señala las que no tengas certeza. [pega las transacciones — sin datos de clientes]"},
-      {t:"Redacción de reportes",p:"Escribe un resumen financiero interno para el mes de [mes]. Cifras clave: Ingresos $X, Gastos $Y, Neto $Z vs. presupuesto de $W. Menos de 200 palabras. Destaca las 2 variaciones más importantes y sus causas probables."},
-      {t:"Correo al contador",p:"Redacta un correo profesional a nuestro contador externo explicando que [situación]. Pídele que [acción]. Adjunta el siguiente contexto: [pega — sin datos confidenciales de clientes]. Tono: colaborativo."},
-      {t:"Ayuda con fórmulas de Excel",p:"En esta hoja de Excel, la columna A tiene fechas, la columna B tiene montos, la columna C tiene nombres de entidad. Escribe una fórmula que sume la columna B solo donde la columna C = 'TEC LLC' y la columna A esté en [mes]."},
-      {t:"Documentación de procesos",p:"Documenta este proceso como un SOP paso a paso. Audiencia: un analista nuevo que nunca ha hecho esto. Incluye: propósito, frecuencia, herramientas necesarias, pasos, qué puede salir mal y con quién escalar. [describe el proceso]"},
-    ]},
-  ];
-  const r=roles[tab];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 7</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Casos de uso por rol</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:560,marginBottom:"1.2rem"}}>Prompts de inicio adaptados a tu rol. Reemplaza [los corchetes] con tu contexto. Nunca incluyas nombres de clientes ni datos confidenciales — recuerda ISO 27001.</p>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {roles.map((ro,i)=><button key={i} onClick={()=>setTab(i)} style={{background:tab===i?ro.col:"#f0f0f0",border:tab===i?`1.5px solid ${ro.mc}`:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:tab===i?ro.tc:GRYB,fontFamily:"inherit"}}>{ro.label}</button>)}
-    </div>
-    <div style={{display:"flex",flexDirection:"column",gap:10,maxWidth:660}}>
-      {r.items.map(it=><div key={it.t} style={{background:r.col,border:`1px solid ${r.mc}`,borderRadius:12,padding:"1rem 1.25rem"}}><div style={{fontSize:13,fontWeight:700,color:r.tc,marginBottom:5}}>{it.t}</div><div style={{background:"rgba(255,255,255,0.6)",borderRadius:8,padding:"8px 12px",fontSize:12,color:r.tc,lineHeight:1.65,fontStyle:"italic",marginTop:4}}>"{it.p}"</div></div>)}
-    </div>
-  </div>;
-}
-
-function Colaborar(){
-  const [tab,setTab]=useState(0);
-  const tabs=["Proyectos","Compartir","Tips de equipo"];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 8</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Colaborar y compartir</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:560,marginBottom:"1.2rem"}}>Los Proyectos de Claude son la forma en que los equipos trabajan juntos sin re-explicar el contexto cada vez.</p>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {tabs.map((t,i)=><button key={i} onClick={()=>setTab(i)} style={{background:tab===i?"#111":"#f0f0f0",border:"none",borderRadius:20,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",color:tab===i?"#fff":GRYB,fontFamily:"inherit"}}>{t}</button>)}
-    </div>
-    <div style={{maxWidth:640}}>
-      {tab===0&&<div>
-        <Card col={PRP} tc={PRPB} mc={PRPM} title="¿Qué son los Proyectos?">
-          <Bullets col={PRPM} items={["Un Proyecto es un espacio de trabajo persistente que retiene el contexto entre conversaciones","Configuras una base de conocimiento a la que Claude siempre tiene acceso","Los miembros del equipo comparten el mismo contexto — sin re-explicaciones","Ideal para: propuestas de Okta, investigación técnica, equipos por función"]}/>
-        </Card>
-        <Card col={BLU} tc={BLUB} mc={BLUM} title="Cómo configurar un Proyecto">
-          {[
-            {step:"1",t:"Crear",d:"Menú izquierdo → Proyectos → Nuevo Proyecto. Nómbralo claramente (ej. 'Propuestas Okta', 'Ingeniería IAM', 'Finanzas TEC360')."},
-            {step:"2",t:"Agregar conocimiento",d:"Sube o pega documentos: SOPs, lineamientos de marca, descripciones de servicios Okta, plantillas, investigaciones. Permanecen ahí."},
-            {step:"3",t:"Escribe un system prompt",d:"En Configuración del Proyecto → System prompt. Ej: 'Estás ayudando a un equipo de consultores de Okta en TEC360. Siempre sé conciso y usa lenguaje técnico apropiado para la audiencia especificada.'"},
-            {step:"4",t:"Invita a compañeros",d:"Agrega colegas al Proyecto para que compartan el mismo contexto. Todas las conversaciones del Proyecto son visibles para sus miembros."},
-          ].map(s=><div key={s.step} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}><div style={{width:22,height:22,borderRadius:"50%",background:BLUM,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{s.step}</div><div><div style={{fontSize:13,fontWeight:700,color:BLUB}}>{s.t}</div><div style={{fontSize:13,color:BLUM,lineHeight:1.5}}>{s.d}</div></div></div>)}
-        </Card>
-      </div>}
-      {tab===1&&<div>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="Compartir conversaciones">
-          <Bullets col={GRNM} items={["Puedes compartir conversaciones individuales con compañeros mediante un enlace","Las conversaciones compartidas son de solo lectura — el destinatario no puede editar tu chat","Úsalo para compartir secuencias de prompts útiles, documentos generados o hilos de investigación","Nunca compartas conversaciones que contengan información clasificada como Confidencial o Restringida (ISO 27001)"]}/>
-        </Card>
-        <Card col={AMB} tc={AMBB} mc={AMBM} title="Qué compartir vs. mantener privado">
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"4px 12px"}}>
-            <div style={{fontSize:12,fontWeight:700,color:AMBB,marginBottom:4}}>✅ Compartir libremente</div>
-            <div style={{fontSize:12,fontWeight:700,color:AMBB,marginBottom:4}}>🚫 Mantener privado</div>
-            {["Plantillas de prompts de Okta","Investigación técnica genérica","Marcos de propuestas","Materiales de entrenamiento"].map(i=><div key={i} style={{fontSize:12,color:AMBB,lineHeight:1.5,paddingLeft:10,position:"relative"}}><span style={{position:"absolute",left:0,top:6,width:4,height:4,borderRadius:"50%",background:AMBB,display:"block"}}/>{i}</div>)}
-            {["Contexto de clientes específicos","Conversaciones financieras","Temas de RRHH o personal","Discusiones de estrategia comercial"].map(i=><div key={i} style={{fontSize:12,color:AMBB,lineHeight:1.5,paddingLeft:10,position:"relative"}}><span style={{position:"absolute",left:0,top:6,width:4,height:4,borderRadius:"50%",background:AMBB,display:"block"}}/>{i}</div>)}
-          </div>
-        </Card>
-      </div>}
-      {tab===2&&<div>
-        <Card col={BLU} tc={BLUB} mc={BLUM} title="Mejores prácticas de equipo">
-          <Bullets col={BLUM} items={["Construye Proyectos compartidos por función — no trabajen todos en chats individuales para tareas de equipo","Acuerden un system prompt por Proyecto para que Claude se comporte consistentemente","Cuando encuentres un gran prompt, agrégalo a la base de conocimiento del Proyecto","Designa un responsable por Proyecto que mantenga la base de conocimiento actualizada","No dupliques Proyectos — verifica si ya existe uno antes de crear otro"]}/>
-        </Card>
-        <Card col={GRN} tc={GRNB} mc={GRNM} title="Proyectos sugeridos para TEC360">
-          <Bullets col={GRNM} items={["Propuestas y respuestas a RFPs de Okta","Referencia técnica de Okta (arquitectura, integraciones, errores comunes)","Biblioteca de prospección y manejo de objeciones","Finanzas y administración US","Plantillas de comunicación con clientes","Marcos de entrega de proyectos de implementación"]}/>
-        </Card>
-      </div>}
-    </div>
-  </div>;
-}
-
-function Casos(){
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 9</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Casos de uso rápidos</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:560,marginBottom:"1.2rem"}}>Lo más universal que Claude hace bien en todos los roles. Consulta la sección Por rol para prompts más específicos.</p>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,maxWidth:680}}>
-      {[
-        {col:GRY,tc:GRYB,mc:GRYM,t:"📧 Correos y comunicación",items:["Borrador → Edición → Traducción","Seguimientos, propuestas, reportes de estatus","Ajusta el tono: formal / cálido / directo"]},
-        {col:BLU,tc:BLUB,mc:BLUM,t:"📄 Documentos",items:["Resume contenido extenso en segundos","Convierte notas en documentos estructurados","Reescribe para diferentes audiencias"]},
-        {col:GRN,tc:GRNB,mc:GRNM,t:"🧠 Investigación y análisis",items:["Compara Okta vs competidores con pros y contras","Sintetiza documentación técnica de Okta","Genera marcos de trabajo y estructuras de propuestas"]},
-        {col:AMB,tc:AMBB,mc:AMBM,t:"🌐 Traducción",items:["Documentos completos al español mexicano","Mantiene terminología técnica de Okta","Ajusta formalidad según la audiencia"]},
-        {col:PRP,tc:PRPB,mc:PRPM,t:"💻 Código y técnico",items:["Revisar y documentar código de integración con Okta","Explicar conceptos técnicos de IAM en simple","Generar boilerplate con Okta SDK"]},
-        {col:RED,tc:REDB,mc:REDM,t:"⚠️ Siempre verifica",items:["Configuraciones técnicas de Okta antes de aplicar","Declaraciones legales o de cumplimiento","Cifras financieras o asesoría fiscal"]},
-      ].map(c=><div key={c.t} style={{background:c.col,borderRadius:12,padding:"1rem 1.25rem"}}><div style={{fontSize:13,fontWeight:700,color:c.tc,marginBottom:7}}>{c.t}</div><Bullets col={c.mc} items={c.items}/></div>)}
-    </div>
-  </div>;
-}
-
-function Integraciones(){
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 10</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Integraciones</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:560,marginBottom:"1.2rem"}}>Claude puede conectarse a herramientas externas y tomar acciones reales en tu nombre. Esto requiere gobernanza — y está sujeto a ISO 27001.</p>
-    <div style={{display:"flex",flexDirection:"column",gap:10,maxWidth:640}}>
-      <Card col={GRN} tc={GRNB} mc={GRNM} title="✅ Integraciones autorizadas (aprobadas para uso)">
-        <Bullets col={GRNM} items={["Claude en PowerPoint — para propuestas, decks, presentaciones de Okta","Claude en Excel — para datos, modelos, rastreadores","Notion, Asana, Linear, Atlassian — gestión de proyectos y tareas","HubSpot — ventas y CRM (solo equipo de ventas, sin datos de clientes vía Claude)","Pregunta a tu administrador antes de conectar cualquier cosa que no esté en esta lista"]}/>
-      </Card>
-      <Card col={RED} tc={REDB} mc={REDB} title="🚫 Nunca conectes Claude a — requerimiento ISO 27001">
-        <Bullets col={REDB} items={["Entornos de Okta de clientes (producción, staging o desarrollo)","Sistemas, portales o entornos de clientes de cualquier tipo","Plataformas bancarias o financieras","Sistemas de RRHH con datos de empleados","Cualquier sistema donde las acciones sean irreversibles sin tu revisión","Cuentas personales de ningún tipo"]}/>
-      </Card>
-      <div style={{background:"#111",borderRadius:10,padding:"12px 16px"}}>
-        <div style={{fontSize:13,color:"#fff",lineHeight:1.7}}>🔑 <strong>Claves de API:</strong> Nunca crees claves de API personales. Nunca las compartas. Todo el acceso a través de la cuenta de la empresa únicamente. Las violaciones se tratan como incidentes de seguridad formales bajo ISO 27001.</div>
-      </div>
-    </div>
-  </div>;
-}
-
-function Reglas(){
-  const rows=[
-    {si:"Describir situaciones de forma genérica — Claude ayuda con la forma del problema",no:"Pegar nombres de clientes, contratos o información confidencial (viola ISO 27001)"},
-    {si:"Configurar contexto (plantilla, audiencia, marca) antes de hacer el prompt en PPT/Excel",no:"Hacer prompts en contexto vacío y esperar buen resultado"},
-    {si:"Migrar prompts y plantillas de ChatGPT a Proyectos de Claude esta semana",no:"Seguir usando ChatGPT personal para cualquier tarea de trabajo"},
-    {si:"Verificar configuraciones de Okta contra documentación oficial antes de aplicar",no:"Usar output técnico de Claude sin validar — puede ser incorrecto"},
-    {si:"Reportar cualquier incidente de seguridad relacionado con Claude de inmediato",no:"Manejar incidentes de seguridad de forma individual sin reportar"},
-    {si:"Iterar en la misma conversación — construir sobre lo que funciona",no:"Conectar Claude a entornos de clientes o herramientas no autorizadas"},
-    {si:"Agregar prompts útiles a la base de conocimiento compartida del equipo",no:"Compartir claves de API, credenciales o accesos de ningún tipo"},
-  ];
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección 11</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"1.2rem"}}>Qué hacer y no hacer</h2>
-    <div style={{maxWidth:720,border:"1px solid #e0e0e0",borderRadius:12,overflow:"hidden"}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr"}}>
-        <div style={{background:GRN,padding:"9px 16px",fontSize:12,fontWeight:700,color:GRNB,letterSpacing:"0.08em",textTransform:"uppercase"}}>✅ Hacer</div>
-        <div style={{background:RED,padding:"9px 16px",fontSize:12,fontWeight:700,color:REDB,letterSpacing:"0.08em",textTransform:"uppercase",borderLeft:"1px solid #e0e0e0"}}>🚫 No hacer</div>
-        {rows.map((r,i)=><>
-          <div key={`d${i}`} style={{background:i%2===0?"#fff":"#f9fdf9",padding:"9px 16px",fontSize:13,color:"#333",lineHeight:1.5,borderTop:"0.5px solid #eee"}}><span style={{color:GRNM,marginRight:5}}>→</span>{r.si}</div>
-          <div key={`dn${i}`} style={{background:i%2===0?"#fff":"#fff9f9",padding:"9px 16px",fontSize:13,color:"#333",lineHeight:1.5,borderTop:"0.5px solid #eee",borderLeft:"1px solid #e0e0e0"}}><span style={{color:REDM,marginRight:5}}>→</span>{r.no}</div>
-        </>)}
-      </div>
-    </div>
-  </div>;
-}
-
-function Quiz(){
-  const [answers,setAnswers]=useState({});
-  const [submitted,setSubmitted]=useState(false);
-  const score=submitted?quizData.filter((q,i)=>answers[i]===q.a).length:null;
-  return <div style={{padding:"2.5rem 3rem"}}>
-    <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:GRYM,marginBottom:"0.5rem"}}>Sección final</div>
-    <h2 style={{fontSize:28,fontWeight:700,color:"#111",marginBottom:"0.5rem"}}>Verificación final</h2>
-    <p style={{fontSize:15,color:"#444",lineHeight:1.7,maxWidth:540,marginBottom:"1.2rem"}}>5 escenarios. Elige la mejor respuesta. Completa esto antes de usar Claude para tareas de trabajo — es un registro formal de tu entrenamiento.</p>
-    <div style={{display:"flex",flexDirection:"column",gap:16,maxWidth:640}}>
-      {quizData.map((q,qi)=><div key={qi} style={{background:"#fff",border:"1px solid #e0e0e0",borderRadius:12,padding:"1.1rem 1.4rem"}}>
-        <div style={{fontSize:14,fontWeight:700,color:"#111",marginBottom:10,lineHeight:1.5}}>{qi+1}. {q.q}</div>
-        <div style={{display:"flex",flexDirection:"column",gap:7}}>
-          {q.opts.map((o,oi)=>{
-            const chosen=answers[qi]===oi,correct=submitted&&oi===q.a,wrong=submitted&&chosen&&oi!==q.a;
-            return <button key={oi} onClick={()=>{if(!submitted)setAnswers(a=>({...a,[qi]:oi}))}} style={{background:correct?GRN:wrong?RED:chosen?BLU:"#f9f9f9",border:`1px solid ${correct?GRNM:wrong?REDM:chosen?BLUM:"#e0e0e0"}`,borderRadius:8,padding:"8px 14px",fontSize:13,textAlign:"left",cursor:submitted?"default":"pointer",color:correct?GRNB:wrong?REDB:chosen?BLUB:"#444",fontFamily:"inherit",lineHeight:1.5}}>{o}</button>;
-          })}
-        </div>
-        {submitted&&<div style={{marginTop:8,background:answers[qi]===q.a?GRN:RED,borderRadius:8,padding:"8px 12px",fontSize:13,color:answers[qi]===q.a?GRNB:REDB,lineHeight:1.5}}>{answers[qi]===q.a?"✅ Correcto — ":"❌ Respuesta correcta: "+q.opts[q.a]+" — "}{q.explanation}</div>}
-      </div>)}
-    </div>
-    {!submitted
-      ?<button onClick={()=>setSubmitted(true)} disabled={Object.keys(answers).length<quizData.length} style={{marginTop:"1.5rem",background:Object.keys(answers).length<quizData.length?"#ccc":"#111",color:"#fff",border:"none",borderRadius:10,padding:"11px 26px",fontSize:14,fontWeight:700,cursor:Object.keys(answers).length<quizData.length?"default":"pointer",fontFamily:"inherit"}}>Enviar respuestas</button>
-      :<div style={{marginTop:"1.5rem",background:score>=4?GRN:score===3?AMB:RED,border:`1.5px solid ${score>=4?GRNM:score===3?AMBM:REDM}`,borderRadius:12,padding:"1.1rem 1.4rem",maxWidth:460}}>
-        <div style={{fontSize:22,fontWeight:700,color:score>=4?GRNB:score===3?AMBB:REDB,marginBottom:4}}>{score} / {quizData.length}</div>
-        <div style={{fontSize:14,color:score>=4?GRNB:score===3?AMBB:REDB,lineHeight:1.6}}>{score===5?"Perfecto. Estás listo. Usa Claude con responsabilidad, protege nuestra certificación ISO 27001 y ayuda a tus compañeros a hacer lo mismo.":score>=4?"Muy bien — revisa las preguntas que fallaste antes de empezar a usar Claude para trabajo.":score===3?"Vuelve a leer las secciones de Seguridad e ISO 27001 antes de usar Claude para tareas de trabajo.":"Por favor repasa toda la guía, especialmente Seguridad e ISO 27001. Es obligatorio completar el entrenamiento antes de usar Claude."}</div>
-      </div>}
-  </div>;
-}
-
-const views={bienvenida:<Bienvenida/>,que:<QueEs/>,chatgpt:<ChatGPT/>,seguridad:<Seguridad/>,iso:<ISO/>,prompts:<Prompts/>,ppt:<PPT/>,roles:<Roles/>,colaborar:<Colaborar/>,casos:<Casos/>,integraciones:<Integraciones/>,reglas:<Reglas/>,quiz:<Quiz/>};
-
-export default function App(){
-  const [cur,setCur]=useState("bienvenida");
-  const idx=sections.findIndex(s=>s.id===cur);
-
-  const download=()=>{
-    const content=document.getElementById("main-content");
-    const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Entrenamiento Claude — TEC360</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,-apple-system,sans-serif;display:flex;height:100vh;background:#fafafa;color:#111}.nav{width:190px;flex-shrink:0;background:#fff;border-right:1px solid #eee;padding:1rem 0.65rem;display:flex;flex-direction:column;gap:2px;overflow-y:auto}.nt{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;margin-bottom:10px;padding-left:8px}.nb{display:block;width:100%;background:none;border:none;text-align:left;padding:6px 8px;border-radius:8px;font-size:11px;color:#666;cursor:pointer;font-family:inherit;font-weight:400;line-height:1.4;margin-bottom:1px}.nb:hover{background:#f5f5f5}.nb.on{background:#E6F1FB;color:#0C447C;font-weight:700}.nb.on.iso{background:#EEEDFE;color:#26215C}.iso-badge{background:#EEEDFE;border-radius:8px;padding:8px 10px;margin-top:8px;margin-bottom:6px}.dl{background:#111;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:8px;width:100%}.main{flex:1;display:flex;flex-direction:column;overflow:hidden}.content{flex:1;overflow-y:auto;padding:0}.ctrl{display:flex;justify-content:space-between;align-items:center;padding:0.65rem 1.5rem;border-top:1px solid #eee;background:#fff;flex-shrink:0}.cb{background:none;border:1px solid #ddd;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;color:#444}.cb:disabled{opacity:0.3;cursor:default}</style></head><body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Entrenamiento Claude — TEC360</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;display:flex;height:100vh;background:#fafafa;color:#111}
+.nav{width:195px;flex-shrink:0;background:#fff;border-right:1px solid #eee;padding:1rem 0.65rem;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nt{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#aaa;margin-bottom:10px;padding-left:8px}
+.nb{display:block;width:100%;background:none;border:none;text-align:left;padding:6px 8px;border-radius:8px;font-size:11px;color:#666;cursor:pointer;font-family:inherit;font-weight:400;line-height:1.4;margin-bottom:1px}
+.nb:hover{background:#f5f5f5}
+.nb.on{background:#E6F1FB;color:#0C447C;font-weight:700}
+.iso-badge{background:#EEEDFE;border-radius:8px;padding:8px 10px;margin-top:8px;margin-bottom:6px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.content{flex:1;overflow-y:auto}
+.ctrl{display:flex;justify-content:space-between;align-items:center;padding:0.65rem 1.5rem;border-top:1px solid #eee;background:#fff;flex-shrink:0}
+.cb{background:none;border:1px solid #ddd;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;color:#444}
+.cb:disabled{opacity:0.3;cursor:default}
+</style>
+</head>
+<body>
 <div class="nav">
   <div class="nt">TEC360 · Claude</div>
   <button class="nb on" id="nb0" onclick="go(0)">👋 Bienvenida</button>
@@ -540,12 +32,15 @@ export default function App(){
   <button class="nb" id="nb6" onclick="go(6)">📊 Claude en PPT y Excel</button>
   <button class="nb" id="nb7" onclick="go(7)">🎯 Por rol</button>
   <button class="nb" id="nb8" onclick="go(8)">🤝 Colaborar y compartir</button>
-  <button class="nb" id="nb9" onclick="go(9)">💡 Casos de uso</button>
+  <button class="nb" id="nb9" onclick="go(9)">💡 Casos de uso reales</button>
   <button class="nb" id="nb10" onclick="go(10)">🔗 Integraciones</button>
   <button class="nb" id="nb11" onclick="go(11)">✅ Qué hacer y no hacer</button>
   <button class="nb" id="nb12" onclick="go(12)">🎯 Verificación final</button>
   <div style="flex:1"></div>
-  <div class="iso-badge"><div style="font-size:10px;font-weight:700;color:#26215C;margin-bottom:2px">🛡️ ISO 27001</div><div style="font-size:10px;color:#534AB7;line-height:1.4">Empresa certificada. Estas reglas son obligatorias.</div></div>
+  <div class="iso-badge">
+    <div style="font-size:10px;font-weight:700;color:#26215C;margin-bottom:2px">🛡️ ISO 27001</div>
+    <div style="font-size:10px;color:#534AB7;line-height:1.4">Empresa certificada. Reglas obligatorias.</div>
+  </div>
 </div>
 <div class="main">
   <div class="content" id="ct"></div>
@@ -559,162 +54,432 @@ export default function App(){
 </div>
 <script>
 var c=0,N=13;
-var RED="#FCEBEB",REDB="#A32D2D",REDM="#F09595",GRN="#E1F5EE",GRNB="#085041",GRNM="#1D9E75",BLU="#E6F1FB",BLUB="#0C447C",BLUM="#185FA5",AMB="#FAEEDA",AMBB="#633806",AMBM="#BA7517",GRY="#F1EFE8",GRYB="#444441",GRYM="#888780",PRP="#EEEDFE",PRPB="#26215C",PRPM="#534AB7";
-function card(col,tc,mc,title,body){return "<div style='background:"+col+";border:1.5px solid "+mc+";border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:10px'><div style='font-size:13px;font-weight:700;color:"+tc+";margin-bottom:8px'>"+title+"<\\/div><div style='font-size:13px;color:"+mc+";line-height:1.65'>"+body+"<\\/div><\\/div>";}
-function bullets(items,col){return items.map(function(i){return "<div style='display:flex;gap:8px;align-items:flex-start;margin-bottom:5px'><div style='width:5px;height:5px;border-radius:50%;background:"+col+";margin-top:7px;flex-shrink:0'><\\/div><div style='font-size:13px;color:"+col+";line-height:1.5'>"+i+"<\\/div><\\/div>";}).join("");}
-function step(n,col,title,desc){return "<div style='display:flex;gap:10px;align-items:flex-start;margin-bottom:10px'><div style='width:22px;height:22px;border-radius:50%;background:"+col+";display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0'>"+n+"<\\/div><div><div style='font-size:13px;font-weight:700;color:"+BLUB+"'>"+title+"<\\/div><div style='font-size:13px;color:"+BLUM+";line-height:1.5'>"+desc+"<\\/div><\\/div><\\/div>";}
-var pages=[
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>TEC360 · Entrenamiento interno<\\/div><h1 style='font-size:40px;font-weight:700;line-height:1.15;margin-bottom:1rem;color:#111'>Usando Claude<br/>en TEC360<\\/h1><p style='font-size:16px;color:#555;line-height:1.7;max-width:520px;margin-bottom:1.5rem'>Todo lo que necesitas saber para usar Claude de forma efectiva y segura. ~15 minutos. Lee todas las secciones.</p>"+
-card(RED,REDB,REDM,"⛔ Vigente de inmediato","Las cuentas personales de herramientas de IA (ChatGPT, Gemini, Copilot, etc.) ya no están permitidas para tareas de trabajo. Todo el uso de IA va a través de la cuenta empresarial de Claude.")+
-card(PRP,PRPB,PRPM,"🛡️ Somos ISO 27001 certificados","El uso de Claude en TEC360 debe alinearse con nuestra certificación ISO 27001. Las reglas de esta guía no son opcionales — son parte de nuestro compromiso de seguridad de la información.")+
-"<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:560px'><div style='background:"+GRN+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+GRNB+";margin-bottom:3px'>Lo que aprenderás<\\/div><div style='font-size:12px;color:"+GRNM+";line-height:1.5'>Claude, plugins, uso por rol y cómo colaborar.<\\/div><\\/div><div style='background:"+RED+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+REDB+";margin-bottom:3px'>Lo que debes saber<\\/div><div style='font-size:12px;color:"+REDM+";line-height:1.5'>Seguridad, ISO 27001 y migración de ChatGPT.<\\/div><\\/div><div style='background:"+BLU+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+BLUB+";margin-bottom:3px'>Habilidades prácticas<\\/div><div style='font-size:12px;color:"+BLUM+";line-height:1.5'>Prompts, plugins PPT y Excel, Proyectos.<\\/div><\\/div><div style='background:"+AMB+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+AMBB+";margin-bottom:3px'>Verificación al final<\\/div><div style='font-size:12px;color:"+AMBM+";line-height:1.5'>5 preguntas — complétala antes de usar Claude.<\\/div><\\/div><\\/div><\\/div>",
+var RED="#FCEBEB",REDB="#A32D2D",REDM="#F09595";
+var GRN="#E1F5EE",GRNB="#085041",GRNM="#1D9E75";
+var BLU="#E6F1FB",BLUB="#0C447C",BLUM="#185FA5";
+var AMB="#FAEEDA",AMBB="#633806",AMBM="#BA7517";
+var GRY="#F1EFE8",GRYB="#444441",GRYM="#888780";
+var PRP="#EEEDFE",PRPB="#26215C",PRPM="#534AB7";
 
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 1<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>¿Qué es Claude?<\\/h2><p style='font-size:15px;color:#444;line-height:1.7;max-width:580px;margin-bottom:1.5rem'>Claude es un asistente de IA de Anthropic. Piénsalo como un colega extremadamente capaz que lee, escribe, analiza y razona — pero al que necesitas supervisar con cuidado.<\\/p>"+
-card(GRN,GRNB,GRNM,"✅ Claude es muy bueno en","<div style='display:grid;grid-template-columns:1fr 1fr;gap:3px 16px'>"+["Redactar y editar documentos","Resumir y extraer puntos clave","Escribir, revisar y explicar código","Lluvia de ideas y estructurar propuestas","Investigación y análisis competitivo","Traducción (Español mexicano ✓)","Armar propuestas de Okta","Conceptos de IAM y documentación"].map(function(i){return "<div style='font-size:13px;color:"+GRNM+";line-height:1.5;padding-left:12px;position:relative'><span style='position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:"+GRNM+";display:block'><\\/span>"+i+"<\\/div>";}).join("")+"<\\/div>")+
-card(AMB,AMBB,AMBM,"⚠️ Limitaciones reales",bullets(["Puede inventar cosas con mucha seguridad — siempre verifica outputs técnicos","Puede no conocer versiones recientes de Okta o cambios de producto","Sin internet por defecto — activa búsqueda web cuando necesites info actual","Sin memoria entre conversaciones a menos que uses Proyectos","No es abogado, contador ni experto en cumplimiento"],AMBM))+
-"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>💡 <strong>El modelo mental correcto:<\\/strong> Claude es un excelente primer borrador — no una respuesta definitiva. Aplica siempre tu propio juicio.<\\/div><\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+REDB+";margin-bottom:0.5rem'>Sección 2 · Acción requerida<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Migración ChatGPT → Claude<\\/h2>"+
-card(RED,REDB,REDB,"⛔ La política — sin excepciones",bullets(["ChatGPT, Gemini, Copilot y cuentas personales de IA: prohibidas para uso laboral de inmediato","Incluye tu suscripción personal de pago a ChatGPT Plus","Motivo: seguridad, cumplimiento ISO 27001, trazabilidad y control de gasto","Incumplimiento = incidente de seguridad. Trátalo así."],REDB))+
-card(BLU,BLUB,BLUM,"Cómo exportar tu historial de ChatGPT",
-step("1",BLUM,"Ve a Configuración de ChatGPT","Haz clic en tu foto → Configuración → Controles de datos")+
-step("2",BLUM,"Solicita la exportación","Haz clic en 'Exportar datos' → Confirma. OpenAI te enviará un enlace de descarga.")+
-step("3",BLUM,"Descarga el ZIP","Obtendrás un archivo conversations.json con todo tu historial.")+
-step("4",BLUM,"Extrae lo útil","Busca prompts y plantillas que quieras conservar. Solo contenido tuyo — sin datos de clientes."))+
-card(PRP,PRPB,PRPM,"Reconstruye en Proyectos de Claude",
-step("1",PRPM,"Crea un Proyecto","Menú izquierdo → Proyectos → Nuevo Proyecto. Ej: 'Propuestas Okta', 'Ingeniería IAM'.")+
-step("2",PRPM,"Agrega contexto","Pega plantillas migradas, lineamientos de marca o antecedentes en la base de conocimiento.")+
-step("3",PRPM,"Configura un system prompt","Instrucciones permanentes para Claude: tu rol, preferencias, reglas de respuesta.")+
-step("4",PRPM,"Invita a compañeros","Cada conversación dentro del Proyecto hereda el contexto. Sin re-explicaciones."))+
-"<\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 3 · Lee con atención<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:0.5rem'>Reglas de seguridad<\\/h2><p style='font-size:15px;color:#444;line-height:1.7;max-width:580px;margin-bottom:0.8rem'>Claude es una herramienta de terceros. Todo lo que escribes se procesa externamente.<\\/p>"+
-card(PRP,PRPB,PRPM,"🛡️ Nota ISO 27001","Estas reglas son requerimientos de nuestra certificación ISO 27001 (Control A.8 — Gestión de activos, Control A.6.3 — Formación en seguridad). El incumplimiento se trata como incidente de seguridad formal.")+
-card(RED,REDB,REDB,"🚫 NUNCA","<div style='display:grid;grid-template-columns:1fr 1fr;gap:3px 16px'>"+["Nombres o datos de clientes","Contratos, SOWs o propuestas","Datos personales de empleados","Claves de API o contraseñas","Estrategia confidencial (M&A, legal)","Código de sistemas de clientes","Datos financieros de terceros"].map(function(i){return "<div style='font-size:13px;color:"+REDB+";line-height:1.5;padding-left:12px;position:relative'><span style='position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:"+REDB+";display:block'><\\/span>"+i+"<\\/div>";}).join("")+"<\\/div>")+
-card(AMB,AMBB,AMBB,"⚠️ Solo con precaución",bullets(["Finanzas internas — usa rangos o %, no cifras exactas","Info de prospectos — describe el tipo, nunca el nombre","Estrategia interna — describe el tema, no pegues el documento","Temas de empleados — solo completamente anonimizados"],AMBB))+
-card(GRN,GRNB,GRNM,"✅ Generalmente seguro",bullets(["Tu propio texto que quieres mejorar o traducir","Investigación genérica sin contexto propietario","Código propio para herramientas internas","Plantillas, marcos de trabajo, estructuras de propuestas Okta"],GRNM))+
-"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>🔒 <strong>Ante la duda, no lo pegues.<\\/strong> Describe la situación de forma genérica.<\\/div><\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+PRPM+";margin-bottom:0.5rem'>Sección 4 · Obligatorio<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:0.5rem'>ISO 27001 y el uso de Claude<\\/h2><p style='font-size:15px;color:#444;line-height:1.7;max-width:600px;margin-bottom:1.2rem'>TEC360 es una empresa certificada en ISO 27001. Mantenerla es responsabilidad de todos.<\\/p>"+
-card(PRP,PRPB,PRPM,"🛡️ ¿Qué es y por qué importa?",bullets(["ISO 27001 es el estándar internacional para la gestión de seguridad de la información","Demostramos ante auditores externos que protegemos la información de forma sistemática","Nos permite vender a clientes enterprise que lo exigen como requisito","Nos pone al nivel de empresas mucho más grandes","La certificación se mantiene con disciplina diaria y auditorías regulares"],PRPM))+
-card(PRP,PRPB,PRPM,"Reglas de uso alineadas a ISO 27001",
-"<div style='display:flex;flex-direction:column;gap:10px'>"+[
-["A.8 — Gestión de activos","Solo información 'Pública' o 'Interna general' puede ingresarse a Claude. Información 'Confidencial' o 'Restringida' nunca debe procesarse en herramientas de IA de terceros."],
-["A.5 — Políticas de seguridad","El uso de Claude está sujeto a la política de uso aceptable de TEC360. El incumplimiento se registra como parte del SGSI."],
-["A.6 — Personas y seguridad","Todos deben completar este entrenamiento antes de usar Claude. El quiz al final es el registro formal."],
-["A.9 — Control de acceso","Accede solo con tu cuenta empresarial asignada. No compartas accesos ni crees cuentas personales."],
-["A.12 — Seguridad operacional","No conectes Claude a sistemas de producción o bases de datos de clientes sin autorización del responsable de seguridad."]
-].map(function(r){return "<div style='display:flex;gap:10px;align-items:flex-start'><div style='background:"+PRPM+";border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0;margin-top:2px'>"+r[0]+"<\\/div><div style='font-size:13px;color:"+PRPM+";line-height:1.6'>"+r[1]+"<\\/div><\\/div>";}).join("")+"<\\/div>")+
-card(PRP,PRPB,PRPM,"Clasificación de información",
-"<div style='display:flex;flex-direction:column;gap:8px'>"+[
-["🟢 Pública","Contenido de marketing, info general de Okta, descripciones de servicios.","✅ Puedes usar en Claude sin restricción"],
-["🟡 Interna general","Plantillas internas, procesos generales, materiales de entrenamiento.","✅ Puedes usar en Claude con precaución básica"],
-["🟠 Confidencial","Propuestas a clientes, estrategia comercial, información financiera, datos de empleados.","⚠️ Describe de forma genérica — nunca pegues el documento"],
-["🔴 Restringida","Datos personales identificables, contratos firmados, credenciales, info de auditoría.","🚫 Nunca en Claude bajo ninguna circunstancia"]
-].map(function(n){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px'><div style='font-size:13px;font-weight:700;color:"+PRPB+";margin-bottom:2px'>"+n[0]+"<\\/div><div style='font-size:12px;color:"+PRPM+";line-height:1.5;margin-bottom:3px'>"+n[1]+"<\\/div><div style='font-size:12px;font-weight:700;color:"+PRPB+"'>"+n[2]+"<\\/div><\\/div>";}).join("")+"<\\/div>")+
-card(RED,REDB,REDB,"¿Qué es un incidente y qué hacer?",bullets(["Si detectas un incidente: NO lo manejes solo — reporta de inmediato a tu líder y al responsable de seguridad","Documenta qué pasó, qué información estuvo involucrada, cuándo y qué herramienta usaste","No borres evidencia hasta que se indique","ISO 27001 exige registro formal de todos los incidentes de seguridad"],REDB))+
-card(GRN,GRNB,GRNM,"Auditorías — lo que debes saber",bullets(["TEC360 es auditada regularmente para mantener la certificación","Los auditores pueden revisar políticas de uso de herramientas de IA como Claude","Este entrenamiento y el quiz son registros formales de tu formación","La regla de oro: si no te sentirías cómodo mostrando esa conversación en una auditoría, no la tengas"],GRNM))+
-"<\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 5<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Cómo hacer buenos prompts<\\/h2>"+
-card(RED,REDB,REDM,"❌ Prompt débil","<div style='font-size:14px;font-style:italic'>\\'Ayúdame a escribir un correo.\\'<\\/div>")+
-card(GRN,GRNB,GRNM,"✅ Prompt fuerte","<div style='font-size:14px;font-style:italic'>\\'Escribe un correo profesional pero cálido para un prospecto que asistió a nuestra demo de Okta la semana pasada pero no ha respondido. Menos de 100 palabras. Sin presionar.\\'<\\/div>")+
-"<div style='display:flex;flex-direction:column;gap:10px;margin-top:12px'>"+[
-[GRN,GRNB,GRNM,"1. Sé específico","Especifica destinatario, tono, propósito, longitud y restricciones."],
-[BLU,BLUB,BLUM,"2. Dale un rol","'Eres un arquitecto senior de IAM especializado en Okta...' ancla el tono y la profundidad."],
-[AMB,AMBB,AMBM,"3. Define el formato","'Dame 5 bullets de menos de 20 palabras cada uno, luego un resumen en una oración.'"],
-[GRY,GRYB,GRYM,"4. Itera en la misma conversación","'Hazlo más corto / más formal / agrega una sección sobre licencias de Okta.'"],
-[GRN,GRNB,GRNM,"5. Pídele que razone primero","'Lista pros y contras de 3 enfoques antes de darme tu recomendación.'"]
-].map(function(t){return "<div style='background:"+t[0]+";border-radius:10px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+t[1]+";margin-bottom:3px'>"+t[3]+"<\\/div><div style='font-size:13px;color:"+t[2]+"'>"+t[4]+"<\\/div><\\/div>";}).join("")+"<\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 6<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Claude en PowerPoint y Excel<\\/h2>"+
-"<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:680px;margin-bottom:12px'>"+
-card(BLU,BLUB,BLUM,"📊 Claude en PowerPoint",bullets(["Construye propuestas de Okta desde cero o mejora decks existentes","Reestructura contenido, corrige formato, reescribe textos","Traduce presentaciones enteras al español al instante","Ideal para: Ventas, diseño, consultores, propuestas"],BLUM))+
-card(GRN,GRNB,GRNM,"📈 Claude en Excel",bullets(["Construye fórmulas, limpia datos, estructura modelos","Genera tablas dinámicas y recomendaciones de gráficas","Audita hojas existentes en busca de errores","Ideal para: Finanzas, admin, gerentes de proyecto"],GRNM))+
-"<\\/div>"+
-card(PRP,PRPB,PRPM,"Configurar assets antes de hacer el prompt",
-step("1",PRPM,"Abre tu plantilla o archivo","Para PPT: abre tu plantilla con branding. Para Excel: abre tu hoja de trabajo. Claude trabaja sobre lo que está abierto.")+
-step("2",PRPM,"Pega lineamientos de marca","Colores, fuentes, tono de voz, reglas de logo. Hazlo una vez por sesión.")+
-step("3",PRPM,"Agrega contenido existente","Texto, datos o estructura existente que Claude debe respetar o trabajar.")+
-step("4",PRPM,"Describe la audiencia","'Director de TI de empresa manufacturera' da un resultado muy diferente a 'equipo interno'.")+
-step("5",PRPM,"Luego da la tarea","Solo después del contexto, da la instrucción específica."))+
-"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>El contexto lo es todo. Más contexto antes del prompt = mejor resultado. Nunca hagas prompts en contexto vacío.<\\/div><\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 7<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Casos de uso por rol<\\/h2>"+
-"<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:700px'>"+[
-[PRP,PRPB,PRPM,"🔧 Ingenieros / Técnicos","Revisión de arquitectura Okta · Documentación técnica · Debugging · Respuestas a RFPs · Revisión de seguridad de flujos de autenticación"],
-[BLU,BLUB,BLUM,"💻 Desarrolladores","Revisión de código de integración Okta · Documentación de API · Tests unitarios · Explicar código heredado · Scaffolding con Okta SDK"],
-[GRN,GRNB,GRNM,"📋 Consultores / PM","Estructura de propuestas Okta · Reportes de estatus · Registro de riesgos · Comunicación con stakeholders · Diseño de talleres de discovery"],
-[AMB,AMBB,AMBM,"💼 Ventas / preventa","Correos de prospección · Manejo de objeciones de Okta · Posicionamiento competitivo · Narrativa de deck ejecutivo · Preguntas de discovery"],
-[GRN,GRNB,GRNM,"📊 Finanzas / admin","Categorización de gastos AMEX · Redacción de reportes · Fórmulas de Excel · Correos al contador · Documentación de procesos"]
-].map(function(r){return "<div style='background:"+r[0]+";border-radius:12px;padding:1rem 1.2rem'><div style='font-size:13px;font-weight:700;color:"+r[1]+";margin-bottom:6px'>"+r[3]+"<\\/div><div style='font-size:12px;color:"+r[2]+";line-height:1.6'>"+r[4]+"<\\/div><\\/div>";}).join("")+
-"<\\/div><div style='margin-top:12px;background:"+PRP+";border:1.5px solid "+PRPM+";border-radius:10px;padding:12px 16px;max-width:700px'><div style='font-size:13px;color:"+PRPB+";line-height:1.7'>💡 Consulta la guía interactiva en línea para ver los prompts completos por rol con ejemplos detallados.<\\/div><\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 8<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Colaborar y compartir<\\/h2>"+
-card(PRP,PRPB,PRPM,"¿Qué son los Proyectos de Claude?",bullets(["Un Proyecto es un espacio de trabajo persistente que retiene contexto entre conversaciones","Configuras una base de conocimiento a la que Claude siempre tiene acceso","Los miembros del equipo comparten el mismo contexto — sin re-explicaciones","Ideal para: propuestas de Okta, investigación técnica, equipos por función"],PRPM))+
-card(BLU,BLUB,BLUM,"Proyectos sugeridos para TEC360",bullets(["Propuestas y respuestas a RFPs de Okta","Referencia técnica de Okta (arquitectura, integraciones, errores comunes)","Biblioteca de prospección y manejo de objeciones","Finanzas y administración","Plantillas de comunicación con clientes","Marcos de entrega de proyectos de implementación"],BLUM))+
-card(AMB,AMBB,AMBM,"Compartir conversaciones — qué sí y qué no","<div style='display:grid;grid-template-columns:1fr 1fr;gap:4px 12px'><div style='font-size:12px;font-weight:700;color:"+AMBB+";margin-bottom:4px'>✅ Compartir libremente<\\/div><div style='font-size:12px;font-weight:700;color:"+AMBB+";margin-bottom:4px'>🚫 Mantener privado<\\/div>"+["Plantillas de prompts de Okta","Investigación técnica genérica","Marcos de propuestas","Materiales de entrenamiento"].map(function(i){return "<div style='font-size:12px;color:"+AMBB+";line-height:1.5;padding-left:10px;position:relative'><span style='position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:"+AMBB+";display:block'><\\/span>"+i+"<\\/div>";}).join("")+["Contexto de clientes específicos","Conversaciones financieras","Temas de RRHH o personal","Estrategia comercial"].map(function(i){return "<div style='font-size:12px;color:"+AMBB+";line-height:1.5;padding-left:10px;position:relative'><span style='position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:"+AMBB+";display:block'><\\/span>"+i+"<\\/div>";}).join("")+"<\\/div>")+
-"<\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 9<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Casos de uso rápidos<\\/h2>"+
-"<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:680px'>"+[
-[GRY,GRYB,GRYM,"📧 Correos y comunicación","Borrador, edición, traducción. Seguimientos, propuestas, reportes. Ajusta el tono."],
-[BLU,BLUB,BLUM,"📄 Documentos","Resume en segundos. Convierte notas en docs. Reescribe para diferentes audiencias."],
-[GRN,GRNB,GRNM,"🧠 Investigación","Compara Okta vs competidores. Sintetiza documentación técnica. Genera marcos."],
-[AMB,AMBB,AMBM,"🌐 Traducción","Documentos al español mexicano. Mantiene terminología técnica de Okta."],
-[PRP,PRPB,PRPM,"💻 Código y técnico","Revisar y documentar código de integración Okta. Generar boilerplate con Okta SDK."],
-[RED,REDB,REDM,"⚠️ Siempre verifica","Configuraciones de Okta antes de aplicar. Declaraciones legales. Cifras financieras."]
-].map(function(c){return "<div style='background:"+c[0]+";border-radius:12px;padding:1rem 1.2rem'><div style='font-size:13px;font-weight:700;color:"+c[1]+";margin-bottom:6px'>"+c[3]+"<\\/div><div style='font-size:13px;color:"+c[2]+";line-height:1.5'>"+c[4]+"<\\/div><\\/div>";}).join("")+"<\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 10<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>Integraciones<\\/h2>"+
-card(GRN,GRNB,GRNM,"✅ Integraciones autorizadas",bullets(["Claude en PowerPoint — para propuestas y decks de Okta","Claude en Excel — para datos, modelos, rastreadores","Notion, Asana, Linear, Atlassian — gestión de proyectos","HubSpot — ventas y CRM (equipo de ventas, sin datos de clientes vía Claude)","Pregunta al administrador antes de conectar cualquier otra herramienta"],GRNM))+
-card(RED,REDB,REDB,"🚫 Nunca conectes Claude a — requerimiento ISO 27001",bullets(["Entornos de Okta de clientes (producción, staging o desarrollo)","Sistemas, portales o entornos de clientes de cualquier tipo","Plataformas bancarias o financieras","Sistemas de RRHH con datos de empleados","Cuentas personales de ningún tipo"],REDB))+
-"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>🔑 <strong>Claves de API:<\\/strong> Nunca crees claves personales. Nunca las compartas. Todo el acceso a través de la cuenta de la empresa. Violaciones = incidentes de seguridad formales bajo ISO 27001.<\\/div><\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 11<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1.2rem'>Qué hacer y no hacer<\\/h2><div style='max-width:720px;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden'><div style='display:grid;grid-template-columns:1fr 1fr'><div style='background:"+GRN+";padding:9px 16px;font-size:12px;font-weight:700;color:"+GRNB+";letter-spacing:0.08em;text-transform:uppercase'>✅ Hacer<\\/div><div style='background:"+RED+";padding:9px 16px;font-size:12px;font-weight:700;color:"+REDB+";letter-spacing:0.08em;text-transform:uppercase;border-left:1px solid #e0e0e0'>🚫 No hacer<\\/div>"+[
-["Describir situaciones de forma genérica","Pegar nombres de clientes o contratos (viola ISO 27001)"],
-["Configurar contexto antes del prompt en PPT/Excel","Hacer prompts en contexto vacío"],
-["Migrar prompts de ChatGPT a Proyectos de Claude esta semana","Seguir usando ChatGPT personal para trabajo"],
-["Verificar configuraciones de Okta contra documentación oficial","Usar output técnico de Claude sin validar"],
-["Reportar incidentes de seguridad de Claude de inmediato","Manejar incidentes de seguridad sin reportar"],
-["Agregar prompts útiles a la base de conocimiento del equipo","Conectar Claude a entornos de clientes o herramientas no autorizadas"],
-["Iterar en la misma conversación — construir sobre lo que funciona","Compartir claves de API o credenciales de ningún tipo"]
-].map(function(r,i){return "<div style='background:"+(i%2===0?"#fff":"#f9fdf9")+";padding:9px 16px;font-size:13px;color:#333;line-height:1.5;border-top:0.5px solid #eee'><span style='color:"+GRNM+";margin-right:5px'>→<\\/span>"+r[0]+"<\\/div><div style='background:"+(i%2===0?"#fff":"#fff9f9")+";padding:9px 16px;font-size:13px;color:#333;line-height:1.5;border-top:0.5px solid #eee;border-left:1px solid #e0e0e0'><span style='color:"+REDM+";margin-right:5px'>→<\\/span>"+r[1]+"<\\/div>";}).join("")+"<\\/div><\\/div><\\/div>",
-
-"<div style='padding:2.5rem 3rem'><div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección final<\\/div><h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:0.5rem'>Verificación final<\\/h2><p style='font-size:15px;color:#444;line-height:1.7;max-width:540px;margin-bottom:1.2rem'>5 escenarios. Elige la mejor respuesta. Es un registro formal de tu entrenamiento ISO 27001.<\\/p>"+
-card(BLU,BLUB,BLUM,"Reglas clave a recordar","<div style='font-size:14px;color:"+BLUB+";line-height:1.9'><strong>1.<\\/strong> Nunca compartas datos de clientes ni información confidencial (ISO 27001)<br\\/><strong>2.<\\/strong> Las cuentas personales de IA están prohibidas — migra a Claude esta semana<br\\/><strong>3.<\\/strong> Configura el contexto antes de hacer prompts en PowerPoint y Excel<br\\/><strong>4.<\\/strong> Reporta cualquier incidente de seguridad de inmediato — no lo manejes solo<br\\/><strong>5.<\\/strong> Siempre verifica configuraciones de Okta y outputs técnicos antes de usar<\\/div>")+
-"<div style='background:"+PRP+";border:1.5px solid "+PRPM+";border-radius:10px;padding:12px 16px;max-width:640px'><div style='font-size:13px;color:"+PRPB+";line-height:1.7'>🛡️ <strong>La regla de oro:<\\/strong> Si no te sentirías cómodo mostrando esa conversación de Claude en una auditoría ISO 27001, no la tengas.<\\/div><\\/div><\\/div>"
-];
-function go(i){c=i;document.querySelectorAll('.nb').forEach(function(b,j){b.classList.toggle('on',j===i)});document.getElementById('ct').innerHTML=pages[i];document.getElementById('pg').textContent=(i+1)+' / '+N;document.getElementById('pb').disabled=i===0;document.getElementById('nx').disabled=i===N-1;document.getElementById('ct').scrollTop=0;}
-function next(){if(c<N-1)go(c+1)}function prev(){if(c>0)go(c-1)}
-go(0);
-<\/script></body></html>`;
-    const blob=new Blob([html],{type:"text/html"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;a.download="tec360-entrenamiento-claude.html";a.click();
-    URL.revokeObjectURL(url);
-  };
-  return <div style={{fontFamily:"system-ui,-apple-system,sans-serif",display:"flex",height:"680px",background:"#fafafa",borderRadius:12,overflow:"hidden",border:"1px solid #e8e8e8"}}>
-    <div style={{width:185,flexShrink:0,background:"#fff",borderRight:"1px solid #eee",padding:"1rem 0.65rem",display:"flex",flexDirection:"column",gap:1,overflowY:"auto"}}>
-      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"#aaa",marginBottom:10,paddingLeft:8}}>TEC360 · Claude</div>
-      {sections.map(s=><button key={s.id} onClick={()=>setCur(s.id)} style={{background:cur===s.id?s.id==="iso"?PRP:BLU:"none",border:"none",textAlign:"left",padding:"6px 8px",borderRadius:8,fontSize:11,color:cur===s.id?s.id==="iso"?PRPB:BLUB:"#666",cursor:"pointer",fontFamily:"inherit",fontWeight:cur===s.id?700:400,lineHeight:1.4}}>{s.icon} {s.label}</button>)}
-      <div style={{flex:1}}/>
-      <div style={{background:PRP,borderRadius:8,padding:"8px 10px",marginTop:8,marginBottom:6}}>
-        <div style={{fontSize:10,fontWeight:700,color:PRPB,marginBottom:2}}>🛡️ ISO 27001</div>
-        <div style={{fontSize:10,color:PRPM,lineHeight:1.4}}>Empresa certificada. Estas reglas son obligatorias.</div>
-      </div>
-      <button onClick={download} style={{background:"#111",color:"#fff",border:"none",borderRadius:8,padding:"8px 10px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginBottom:8}}>⬇ Descargar HTML</button>
-    </div>
-    <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column"}}>
-      <div style={{flex:1}}>{views[cur]}</div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0.65rem 1.5rem",borderTop:"1px solid #eee",background:"#fff",flexShrink:0}}>
-        <span style={{fontSize:11,color:"#aaa"}}>{idx+1} / {sections.length}</span>
-        <div style={{display:"flex",gap:6}}>
-          <button onClick={()=>setCur(sections[Math.max(0,idx-1)].id)} disabled={idx===0} style={{background:"none",border:"1px solid #ddd",borderRadius:8,padding:"5px 12px",fontSize:11,cursor:"pointer",fontFamily:"inherit",color:"#444",opacity:idx===0?0.3:1}}>← anterior</button>
-          <button onClick={()=>setCur(sections[Math.min(sections.length-1,idx+1)].id)} disabled={idx===sections.length-1} style={{background:"none",border:"1px solid #ddd",borderRadius:8,padding:"5px 12px",fontSize:11,cursor:"pointer",fontFamily:"inherit",color:"#444",opacity:idx===sections.length-1?0.3:1}}>siguiente →</button>
-        </div>
-      </div>
-    </div>
-  </div>;
+function card(col,tc,mc,title,body){
+  return "<div style='background:"+col+";border:1.5px solid "+mc+";border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:10px'>"
+    +"<div style='font-size:13px;font-weight:700;color:"+tc+";margin-bottom:8px'>"+title+"</div>"
+    +"<div style='font-size:13px;color:"+mc+";line-height:1.65'>"+body+"</div></div>";
 }
+function bullets(items,col){
+  return items.map(function(i){
+    return "<div style='display:flex;gap:8px;align-items:flex-start;margin-bottom:5px'>"
+      +"<div style='width:5px;height:5px;border-radius:50%;background:"+col+";margin-top:7px;flex-shrink:0'></div>"
+      +"<div style='font-size:13px;color:"+col+";line-height:1.5'>"+i+"</div></div>";
+  }).join("");
+}
+function step(n,col,title,desc){
+  return "<div style='display:flex;gap:10px;align-items:flex-start;margin-bottom:10px'>"
+    +"<div style='width:22px;height:22px;border-radius:50%;background:"+col+";display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0'>"+n+"</div>"
+    +"<div><div style='font-size:13px;font-weight:700;color:"+PRPB+"'>"+title+"</div>"
+    +"<div style='font-size:13px;color:"+PRPM+";line-height:1.5'>"+desc+"</div></div></div>";
+}
+function sec(label,title,body){
+  return "<div style='padding:2.5rem 3rem'>"
+    +"<div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>"+label+"</div>"
+    +"<h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:1rem'>"+title+"</h2>"
+    +body+"</div>";
+}
+function caseblock(col,tc,role,num,title,problem,prompt,result){
+  return "<div style='background:#fff;border:1px solid #e0e0e0;border-radius:14px;overflow:hidden;margin-bottom:16px'>"
+    +"<div style='background:"+col+";padding:12px 20px;display:flex;align-items:center;gap:10px'>"
+    +"<div style='font-size:13px;font-weight:700;color:"+tc+"'>"+role+"</div>"
+    +"<span style='background:"+tc+";color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px'>Caso "+num+"</span></div>"
+    +"<div style='padding:16px 20px'>"
+    +"<div style='font-size:14px;font-weight:700;color:#111;margin-bottom:6px'>"+title+"</div>"
+    +"<div style='font-size:13px;color:#555;line-height:1.7;margin-bottom:12px'><strong>El problema:</strong> "+problem+"</div>"
+    +"<div style='background:"+col+";border-radius:8px;padding:12px 14px;margin-bottom:10px'>"
+    +"<div style='font-size:11px;font-weight:700;color:"+tc+";margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em'>Así se lo dices a Claude:</div>"
+    +"<div style='font-size:13px;color:"+tc+";line-height:1.7;font-style:italic'>\""+prompt+"\"</div></div>"
+    +"<div style='background:#f9f9f9;border-radius:8px;padding:12px 14px'>"
+    +"<div style='font-size:11px;font-weight:700;color:#444;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em'>Qué obtienes:</div>"
+    +"<div style='font-size:13px;color:#555;line-height:1.7'>"+result+"</div></div></div></div>";
+}
+
+var pages=[];
+
+// PÁGINA 0 — BIENVENIDA
+pages[0]="<div style='padding:2.5rem 3rem'>"
++"<div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>TEC360 · Entrenamiento interno</div>"
++"<h1 style='font-size:40px;font-weight:700;line-height:1.15;margin-bottom:1rem;color:#111'>Usando Claude<br/>en TEC360</h1>"
++"<p style='font-size:16px;color:#555;line-height:1.7;max-width:520px;margin-bottom:1.5rem'>Todo lo que necesitas saber para usar Claude de forma efectiva y segura. ~15 minutos. Lee todas las secciones — especialmente <strong style='color:"+REDB+"'>Reglas de seguridad</strong> e <strong style='color:"+PRPB+"'>ISO 27001</strong>.</p>"
++card(RED,REDB,REDM,"⛔ Vigente de inmediato","Las cuentas personales de herramientas de IA (ChatGPT, Gemini, Copilot, etc.) <strong>ya no están permitidas para tareas de trabajo</strong>. Todo el uso de IA va a través de la cuenta empresarial de Claude.")
++card(PRP,PRPB,PRPM,"🛡️ Somos ISO 27001 certificados","El uso de Claude en TEC360 debe alinearse con nuestra certificación ISO 27001. Las reglas de esta guía no son opcionales — son parte de nuestro compromiso de seguridad de la información.")
++"<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:560px'>"
++"<div style='background:"+GRN+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+GRNB+";margin-bottom:3px'>Lo que aprenderás</div><div style='font-size:12px;color:"+GRNM+";line-height:1.5'>Claude, plugins, uso por rol y cómo colaborar.</div></div>"
++"<div style='background:"+RED+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+REDB+";margin-bottom:3px'>Lo que debes saber</div><div style='font-size:12px;color:"+REDM+";line-height:1.5'>Seguridad, ISO 27001 y migración de ChatGPT.</div></div>"
++"<div style='background:"+BLU+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+BLUB+";margin-bottom:3px'>Habilidades prácticas</div><div style='font-size:12px;color:"+BLUM+";line-height:1.5'>Prompts, plugins PPT y Excel, Proyectos.</div></div>"
++"<div style='background:"+AMB+";border-radius:12px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+AMBB+";margin-bottom:3px'>Verificación al final</div><div style='font-size:12px;color:"+AMBM+";line-height:1.5'>5 preguntas — complétala antes de usar Claude.</div></div>"
++"</div></div>";
+
+// PÁGINA 1 — QUÉ ES CLAUDE
+pages[1]=sec("Sección 1","¿Qué es Claude?",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:580px;margin-bottom:1.5rem'>Claude es un asistente de IA de Anthropic. Piénsalo como un colega extremadamente capaz que lee, escribe, analiza y razona — pero al que necesitas supervisar con cuidado.</p>"
++card(GRN,GRNB,GRNM,"✅ Claude es muy bueno en",
+  "<div style='display:grid;grid-template-columns:1fr 1fr;gap:3px 16px'>"
+  +["Redactar y editar documentos","Resumir y extraer puntos clave","Escribir, revisar y explicar código","Lluvia de ideas y propuestas","Investigación y análisis competitivo","Traducción (Español mexicano ✓)","Armar propuestas de Okta","Conceptos de IAM y documentación"]
+  .map(function(i){return "<div style='font-size:13px;color:"+GRNM+";line-height:1.5;padding-left:12px;position:relative'><span style='position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:"+GRNM+";display:block'></span>"+i+"</div>";}).join("")
+  +"</div>")
++card(AMB,AMBB,AMBM,"⚠️ Limitaciones reales",
+  bullets(["Puede inventar cosas con seguridad — siempre verifica outputs técnicos y legales","Puede no conocer versiones recientes de Okta","Sin internet por defecto — activa búsqueda web cuando necesites info actual","Sin memoria entre conversaciones a menos que uses Proyectos","No es abogado, contador ni experto en cumplimiento"],AMBM))
++"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>💡 <strong>El modelo mental correcto:</strong> Claude es un excelente primer borrador — no una respuesta definitiva. Aplica siempre tu propio juicio.</div></div>");
+
+// PÁGINA 2 — CHATGPT
+pages[2]=sec("Sección 2 · Acción requerida","Migración ChatGPT → Claude",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:580px;margin-bottom:1.2rem'>Las cuentas personales de IA ya no están permitidas para trabajo.</p>"
++card(RED,REDB,REDB,"⛔ La política — sin excepciones",
+  bullets(["ChatGPT, Gemini, Copilot y cuentas personales de IA: prohibidas para uso laboral de inmediato","Incluye tu suscripción personal de pago a ChatGPT Plus","Motivo: seguridad, cumplimiento ISO 27001, trazabilidad y control de gasto","Incumplimiento = incidente de seguridad formal"],REDB))
++card(BLU,BLUB,BLUM,"Cómo exportar tu historial de ChatGPT",
+  step("1",BLUM,"Ve a Configuración de ChatGPT","Haz clic en tu foto → Configuración → Controles de datos")
+  +step("2",BLUM,"Solicita la exportación","Clic en 'Exportar datos' → Confirma. OpenAI te enviará un enlace por correo.")
+  +step("3",BLUM,"Descarga el ZIP","Obtendrás un archivo conversations.json con todo tu historial.")
+  +step("4",BLUM,"Extrae lo útil","Busca prompts y plantillas propias. Sin datos de clientes — viola ISO 27001."))
++card(PRP,PRPB,PRPM,"Reconstruye en Proyectos de Claude",
+  step("1",PRPM,"Crea un Proyecto","Menú izquierdo → Proyectos → Nuevo Proyecto. Ej: 'Propuestas Okta'.")
+  +step("2",PRPM,"Agrega contexto","Pega plantillas, lineamientos de marca, antecedentes en la base de conocimiento.")
+  +step("3",PRPM,"Configura un system prompt","Instrucciones permanentes: tu rol, preferencias, reglas de respuesta.")
+  +step("4",PRPM,"Invita a compañeros","Cada conversación hereda el contexto. Sin re-explicaciones.")));
+
+// PÁGINA 3 — SEGURIDAD
+pages[3]=sec("Sección 3 · Lee con atención","Reglas de seguridad",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:580px;margin-bottom:0.8rem'>Claude es una herramienta de terceros. Todo lo que escribes se procesa externamente.</p>"
++card(PRP,PRPB,PRPM,"🛡️ Plan Team + ISO 27001","Tenemos contratado el <strong>plan Team de Claude</strong>, lo que significa que nuestras conversaciones <strong>no se usan para entrenar modelos de IA</strong> y contamos con acuerdos formales de privacidad de datos. Aun así, la información viaja a los servidores de Anthropic para procesarse — igual que con Google Workspace o Microsoft 365. Por eso las reglas de qué puede entrar a Claude siguen siendo obligatorias y forman parte de nuestros requerimientos ISO 27001.")
++card(RED,REDB,REDB,"🚫 NUNCA",
+  "<div style='display:grid;grid-template-columns:1fr 1fr;gap:3px 16px'>"
+  +["Nombres o datos de clientes","Contratos, SOWs o propuestas","Datos personales de empleados","Claves de API o contraseñas","Estrategia confidencial M&A o legal","Código de sistemas de clientes","Datos financieros de terceros"]
+  .map(function(i){return "<div style='font-size:13px;color:"+REDB+";line-height:1.5;padding-left:12px;position:relative'><span style='position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:"+REDB+";display:block'></span>"+i+"</div>";}).join("")
+  +"</div>")
++card(AMB,AMBB,AMBB,"⚠️ Solo con precaución",
+  bullets(["Finanzas internas — usa rangos o %, no cifras exactas","Info de prospectos — describe el tipo, nunca el nombre","Estrategia interna — describe el tema, no pegues el documento","Temas de empleados — solo completamente anonimizados"],AMBB))
++card(GRN,GRNB,GRNM,"✅ Generalmente seguro",
+  bullets(["Tu propio texto que quieres mejorar o traducir","Investigación genérica sin contexto propietario","Código propio para herramientas internas","Plantillas, marcos de trabajo, estructuras de propuestas Okta"],GRNM))
++"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>🔒 <strong>Ante la duda, no lo pegues.</strong> Describe la situación de forma genérica.</div></div>");
+
+// PÁGINA 4 — ISO 27001
+pages[4]="<div style='padding:2.5rem 3rem'>"
++"<div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+PRPM+";margin-bottom:0.5rem'>Sección 4 · Obligatorio</div>"
++"<h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:0.5rem'>ISO 27001 y el uso de Claude</h2>"
++"<p style='font-size:15px;color:#444;line-height:1.7;max-width:600px;margin-bottom:1.2rem'>TEC360 es una empresa certificada en ISO 27001. Mantenerla es responsabilidad de todos.</p>"
++card(PRP,PRPB,PRPM,"🛡️ ¿Qué es y por qué importa?",
+  bullets(["ISO 27001 es el estándar internacional para la gestión de seguridad de la información","Demostramos ante auditores externos que protegemos la información de forma sistemática","Nos permite vender a clientes enterprise que lo exigen como requisito","Nos pone al nivel de empresas mucho más grandes que nosotros","La certificación se mantiene con disciplina diaria y auditorías regulares"],PRPM))
++card(PRP,PRPB,PRPM,"Reglas de uso — controles ISO 27001",
+  [["A.8 — Gestión de activos","Solo información 'Pública' o 'Interna general' puede ingresarse a Claude. Información 'Confidencial' o 'Restringida' nunca en herramientas de IA de terceros."],
+   ["A.5 — Políticas de seguridad","El uso de Claude está sujeto a la política de uso aceptable de TEC360. El incumplimiento se registra en el SGSI."],
+   ["A.6 — Personas y seguridad","Todos deben completar este entrenamiento antes de usar Claude. El quiz es el registro formal."],
+   ["A.9 — Control de acceso","Accede solo con tu cuenta empresarial. No compartas accesos ni crees cuentas personales."],
+   ["A.12 — Seguridad operacional","No conectes Claude a sistemas de producción o bases de datos de clientes sin autorización."]]
+  .map(function(r){return "<div style='display:flex;gap:10px;align-items:flex-start;margin-bottom:10px'><div style='background:"+PRPM+";border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0;margin-top:2px'>"+r[0]+"</div><div style='font-size:13px;color:"+PRPM+";line-height:1.6'>"+r[1]+"</div></div>";}).join(""))
++card(PRP,PRPB,PRPM,"Clasificación de información",
+  [["🟢 Pública","Marketing, info general de Okta, descripciones de servicios.","✅ Puedes usar en Claude sin restricción"],
+   ["🟡 Interna general","Plantillas internas, procesos generales, materiales de entrenamiento.","✅ Puedes usar en Claude con precaución básica"],
+   ["🟠 Confidencial","Propuestas a clientes, estrategia comercial, información financiera, datos de empleados.","⚠️ Describe de forma genérica — nunca pegues el documento"],
+   ["🔴 Restringida","Datos personales identificables, contratos firmados, credenciales, info de auditoría.","🚫 Nunca en Claude bajo ninguna circunstancia"]]
+  .map(function(n){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px;margin-bottom:6px'><div style='font-size:13px;font-weight:700;color:"+PRPB+";margin-bottom:2px'>"+n[0]+"</div><div style='font-size:12px;color:"+PRPM+";line-height:1.5;margin-bottom:3px'>"+n[1]+"</div><div style='font-size:12px;font-weight:700;color:"+PRPB+"'>"+n[2]+"</div></div>";}).join(""))
++card(RED,REDB,REDB,"¿Qué hacer si detectas un incidente?",
+  bullets(["No lo manejes solo — reporta de inmediato a tu líder y al responsable de seguridad","Documenta qué pasó, qué información estuvo involucrada, cuándo y qué herramienta usaste","No borres evidencia hasta que se indique","ISO 27001 exige registro formal de todos los incidentes"],REDB))
++card(GRN,GRNB,GRNM,"Auditorías — la regla de oro",
+  bullets(["TEC360 es auditada regularmente para mantener la certificación","Los auditores pueden revisar políticas de uso de herramientas de IA","Este entrenamiento y el quiz son registros formales de tu formación","Si no te sentirías cómodo mostrando esa conversación en una auditoría, no la tengas"],GRNM))
++"</div>";
+
+// PÁGINA 5 — PROMPTS
+pages[5]=sec("Sección 5","Cómo hacer buenos prompts",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:560px;margin-bottom:1.2rem'>La calidad del output de Claude es directamente proporcional a la calidad de tu prompt.</p>"
++"<div style='display:flex;flex-direction:column;gap:10px;max-width:640px'>"
++[
+  [GRN,GRNB,GRNM,"1. Sé específico","Especifica destinatario, tono, propósito, longitud y restricciones. Ejemplo: 'Escribe un correo de seguimiento post-demo de Okta, menos de 100 palabras, tono cálido pero profesional, que termine con una pregunta abierta.'"],
+  [BLU,BLUB,BLUM,"2. Dale un rol","'Eres un arquitecto senior de IAM especializado en Okta...' ancla el tono, nivel de experiencia y profundidad de la respuesta."],
+  [AMB,AMBB,AMBM,"3. Define el formato","'Dame 5 bullets de menos de 20 palabras cada uno, luego un resumen en una oración y señala cualquier riesgo.'"],
+  [GRY,GRYB,GRYM,"4. Itera en la misma conversación","'Hazlo más corto.' / 'Más formal.' / 'Agrega una sección sobre licencias de Okta.' Claude mantiene el contexto — construye sobre lo que funciona."],
+  [GRN,GRNB,GRNM,"5. Pídele que razone primero","'Lista pros y contras de 3 enfoques de integración con Okta antes de darme tu recomendación.' Mejora significativamente la precisión en preguntas técnicas."]
+].map(function(t){return "<div style='background:"+t[0]+";border-radius:10px;padding:0.9rem 1.1rem'><div style='font-size:13px;font-weight:700;color:"+t[1]+";margin-bottom:3px'>"+t[3]+"</div><div style='font-size:13px;color:"+t[2]+"'>"+t[4]+"</div></div>";}).join("")
++"</div>");
+
+// PÁGINA 6 — PPT Y EXCEL
+pages[6]=sec("Sección 6","Claude en PowerPoint y Excel",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:580px;margin-bottom:1.2rem'>Dos de los plugins más poderosos — especialmente para propuestas de Okta.</p>"
++"<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:680px;margin-bottom:12px'>"
++card(BLU,BLUB,BLUM,"📊 Claude en PowerPoint",bullets(["Construye propuestas de Okta desde cero o mejora decks existentes","Reestructura contenido, corrige formato, reescribe textos","Traduce presentaciones enteras al español al instante","Ideal para: Ventas, diseño, consultores, propuestas"],BLUM))
++card(GRN,GRNB,GRNM,"📈 Claude en Excel",bullets(["Construye fórmulas, limpia datos, estructura modelos","Genera tablas dinámicas y recomendaciones","Audita hojas existentes en busca de errores","Ideal para: Finanzas, admin, gerentes de proyecto"],GRNM))
++"</div>"
++card(PRP,PRPB,PRPM,"Configurar assets ANTES de hacer el prompt",
+  step("1",PRPM,"Abre tu plantilla o archivo","Para PPT: abre tu plantilla con branding. Para Excel: abre tu hoja de trabajo. Claude trabaja sobre lo que está abierto.")
+  +step("2",PRPM,"Pega lineamientos de marca","Colores, fuentes, tono de voz, reglas de logo. Hazlo una vez por sesión.")
+  +step("3",PRPM,"Agrega contenido existente","Texto, datos o estructura existente que Claude debe respetar.")
+  +step("4",PRPM,"Describe la audiencia","'Director de TI de empresa manufacturera' da un resultado muy diferente a 'equipo interno'.")
+  +step("5",PRPM,"Luego da la tarea","Solo después de configurar el contexto, da la instrucción específica."))
++"<div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:680px'>"
++card(BLU,BLUB,BLUM,"✅ Ejemplos PPT",
+  "<div style='font-size:12px;color:"+BLUB+";line-height:1.7'><strong>Propuesta Okta:</strong><br/><em>'Estoy armando una propuesta para una implementación de Okta Workforce Identity. El cliente es una empresa de [industria] con [X] empleados. Su preocupación principal es [pain point]. Usa el slide 1 como plantilla. Construye: resumen ejecutivo, diagnóstico, solución, equipo, cronograma e inversión.'</em><br/><br/><strong>Narrativa:</strong><br/><em>'Reestructura esta presentación para seguir: problema → insight → solución Okta → prueba de valor → llamada a acción. Reescribe los títulos para un mensaje claro por slide.'</em></div>")
++card(GRN,GRNB,GRNM,"✅ Ejemplos Excel",
+  "<div style='font-size:12px;color:"+GRNB+";line-height:1.7'><strong>Tracker de gastos:</strong><br/><em>'Construye un rastreador mensual de gastos con columnas para fecha, proveedor, categoría, monto, entidad y notas. Agrega resumen con totales por categoría. Formato condicional en filas mayores a $1,000.'</em><br/><br/><strong>Limpieza de datos:</strong><br/><em>'Limpia estos datos: elimina duplicados, estandariza fechas a DD/MM/AAAA, capitaliza nombres correctamente, señala filas con valores faltantes en columnas B o C.'</em></div>")
++"</div>");
+
+// PÁGINA 7 — POR ROL
+pages[7]=sec("Sección 7","Prompts de inicio por rol",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:560px;margin-bottom:1.2rem'>Copia, adapta y haz estos prompts tuyos. Reemplaza [los corchetes]. Nunca incluyas datos confidenciales.</p>"
++"<div style='display:flex;flex-direction:column;gap:12px;max-width:680px'>"
++card(PRP,PRPB,PRPM,"🔧 Ingenieros / Técnicos Okta",
+  "<div style='display:flex;flex-direction:column;gap:8px'>"
+  +[["Revisión de arquitectura","'Eres un arquitecto senior de IAM especializado en Okta. Revisa esta arquitectura e identifica: (1) brechas de seguridad, (2) problemas de escalabilidad, (3) desviaciones de mejores prácticas de Okta. [pega descripción sin datos de clientes]'"],
+    ["Documentación técnica","'Escribe documentación para esta configuración de Okta. Incluye: propósito, prerrequisitos, pasos, comportamiento esperado y errores comunes. Audiencia: ingenieros de nivel medio.'"],
+    ["Debugging","'Estoy obteniendo este error en Okta: [error]. Esta es mi configuración: [pega — sin datos de clientes]. ¿Qué lo causa y cuáles son las soluciones probables?'"],
+    ["Revisión de seguridad","'Revisa este flujo de autenticación de Okta e identifica vulnerabilidades, riesgos de tokens o desviaciones de mejores prácticas. Sugiere mitigaciones específicas.'"],
+    ["Respuesta técnica a RFP","'Redacta la sección técnica para este RFP. Nuestra solución usa Okta con [módulos]. Los requerimientos del cliente son: [lista]. Enfócate en cómo cumplimos cada punto.'"]
+  ].map(function(p){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px'><div style='font-size:12px;font-weight:700;color:"+PRPB+";margin-bottom:3px'>"+p[0]+"</div><div style='font-size:12px;color:"+PRPM+";line-height:1.6;font-style:italic'>"+p[1]+"</div></div>";}).join("")
+  +"</div>")
++card(BLU,BLUB,BLUM,"💻 Desarrolladores",
+  "<div style='display:flex;flex-direction:column;gap:8px'>"
+  +[["Revisión de código","'Revisa este código de integración con la API de Okta. Para cada problema: describe el issue, califica severidad (A/M/B) y proporciona el código corregido. [pega el código]'"],
+    ["Documentación de API","'Escribe documentación para este endpoint de integración con Okta. Incluye: descripción, método, URL, parámetros, respuesta, errores y 2 ejemplos. [pega el código]'"],
+    ["Tests unitarios","'Escribe pruebas unitarias para esta función. Cubre: happy path, casos límite y fallos. Usa [framework]. Incluye comentarios explicando cada prueba. [pega la función]'"],
+    ["Scaffolding","'Escribe una integración boilerplate entre [Sistema A] y Okta usando [lenguaje/SDK]. Incluye OAuth 2.0, manejo de errores, logging y comentarios inline. Lista para producción.'"]
+  ].map(function(p){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px'><div style='font-size:12px;font-weight:700;color:"+BLUB+";margin-bottom:3px'>"+p[0]+"</div><div style='font-size:12px;color:"+BLUM+";line-height:1.6;font-style:italic'>"+p[1]+"</div></div>";}).join("")
+  +"</div>")
++card(GRN,GRNB,GRNM,"📋 Consultores / PM",
+  "<div style='display:flex;flex-direction:column;gap:8px'>"
+  +[["Propuesta Okta","'Ayúdame a estructurar una propuesta para una implementación de Okta [Workforce/Customer Identity]. Preocupación del cliente: [X]. Diferenciador: [Y]. Incluye: resumen ejecutivo, diagnóstico, solución, equipo, cronograma, inversión y por qué TEC360.'"],
+    ["Reporte de estatus","'Redacta un reporte de estatus del proyecto de Okta que está [en tiempo/en riesgo]. Actualizaciones: [lista]. Riesgos: [lista]. Menos de 300 palabras, directo y profesional.'"],
+    ["Registro de riesgos","'Para este proyecto de Okta: [descripción]. Identifica los 5 principales riesgos. Para cada uno: describe el riesgo, califica probabilidad e impacto (A/M/B) y sugiere mitigación. Formato de tabla.'"],
+    ["Taller de discovery","'Diseña una agenda de taller de discovery de 2 horas para una implementación de Okta. Incluye: objetivos, ejercicios, preguntas clave, materiales y outputs esperados. Audiencia: TI y seguridad del cliente.'"]
+  ].map(function(p){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px'><div style='font-size:12px;font-weight:700;color:"+GRNB+";margin-bottom:3px'>"+p[0]+"</div><div style='font-size:12px;color:"+GRNM+";line-height:1.6;font-style:italic'>"+p[1]+"</div></div>";}).join("")
+  +"</div>")
++card(AMB,AMBB,AMBM,"💼 Ventas / preventa",
+  "<div style='display:flex;flex-direction:column;gap:8px'>"
+  +[["Prospección","'Escribe un correo en frío para un [CISO/Director de TI] en empresa de [industria]. Somos implementadores certificados de Okta. Menos de 100 palabras. Sin buzzwords. Que se sienta humano.'"],
+    ["Manejo de objeciones","'Un prospecto dijo: [objeción sobre Okta]. Dame 3 formas de responder — directa, empática y de reencuadre. Menos de 50 palabras cada una. Honesto, sin presionar.'"],
+    ["Deck ejecutivo","'Armo una presentación para vender una implementación de Okta a la alta dirección de [industria]. Construye un arco narrativo: riesgo actual → costo de inacción → solución Okta → por qué TEC360 → llamada a acción.'"],
+    ["Discovery","'Dame 10 preguntas de discovery para un prospecto evaluando soluciones IAM. Objetivo: entender dolor, madurez de seguridad, proceso de decisión y si Okta es el fit correcto.'"]
+  ].map(function(p){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px'><div style='font-size:12px;font-weight:700;color:"+AMBB+";margin-bottom:3px'>"+p[0]+"</div><div style='font-size:12px;color:"+AMBM+";line-height:1.6;font-style:italic'>"+p[1]+"</div></div>";}).join("")
+  +"</div>")
++card(GRN,GRNB,GRNM,"📊 Finanzas / Admin",
+  "<div style='display:flex;flex-direction:column;gap:8px'>"
+  +[["Categorización de gastos","'Tengo estas transacciones del estado de cuenta AMEX de [mes]. Categoriza cada una en: Viajes, Alimentos, Software, Servicios Profesionales, Oficina u Otros. Señala las ambiguas. [pega — sin datos de clientes]'"],
+    ["Reporte financiero","'Escribe un resumen financiero interno para [mes]. Ingresos $X, Gastos $Y, Neto $Z vs. presupuesto $W. Menos de 200 palabras. Destaca las 2 variaciones más importantes.'"],
+    ["Fórmula Excel","'En esta hoja, columna A = fechas, columna B = montos, columna C = entidad. Escribe una fórmula que sume columna B solo donde C = TEC LLC y A esté en [mes].'"],
+    ["Documentación de procesos","'Documenta este proceso como un SOP paso a paso. Audiencia: analista nuevo. Incluye: propósito, frecuencia, herramientas, pasos, qué puede salir mal y con quién escalar.'"]
+  ].map(function(p){return "<div style='background:rgba(255,255,255,0.5);border-radius:8px;padding:10px 12px'><div style='font-size:12px;font-weight:700;color:"+GRNB+";margin-bottom:3px'>"+p[0]+"</div><div style='font-size:12px;color:"+GRNM+";line-height:1.6;font-style:italic'>"+p[1]+"</div></div>";}).join("")
+  +"</div>")
++"</div>");
+
+// PÁGINA 8 — COLABORAR
+pages[8]=sec("Sección 8","Colaborar y compartir",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:560px;margin-bottom:1.2rem'>Los Proyectos de Claude son la forma en que los equipos trabajan juntos sin re-explicar el contexto cada vez.</p>"
++card(PRP,PRPB,PRPM,"¿Qué son los Proyectos de Claude?",
+  bullets(["Un Proyecto es un espacio de trabajo persistente que retiene contexto entre conversaciones","Configuras una base de conocimiento a la que Claude siempre tiene acceso","Los miembros del equipo comparten el mismo contexto — sin re-explicaciones","Ideal para: propuestas de Okta, investigación técnica, equipos por función"],PRPM))
++card(BLU,BLUB,BLUM,"Cómo configurar un Proyecto",
+  step("1",BLUM,"Crear","Menú izquierdo → Proyectos → Nuevo Proyecto. Ej: 'Propuestas Okta', 'Ingeniería IAM', 'Finanzas TEC360'.")
+  +step("2",BLUM,"Agregar conocimiento","Sube o pega: SOPs, lineamientos de marca, descripciones de servicios Okta, plantillas, investigaciones.")
+  +step("3",BLUM,"Escribe un system prompt","Ej: 'Estás ayudando a un equipo de consultores de Okta en TEC360. Sé conciso y usa lenguaje técnico apropiado para la audiencia especificada.'")
+  +step("4",BLUM,"Invita a compañeros","Agrega colegas al Proyecto. Todas las conversaciones son visibles para los miembros."))
++card(GRN,GRNB,GRNM,"Proyectos sugeridos para TEC360",
+  bullets(["Propuestas y RFPs de Okta","Referencia técnica Okta (arquitectura, integraciones, errores comunes)","Biblioteca de ventas — prospección y manejo de objeciones","Finanzas y administración","Plantillas de comunicación con clientes","Marcos de entrega de proyectos de implementación"],GRNM))
++card(AMB,AMBB,AMBM,"Qué compartir vs. mantener privado",
+  "<div style='display:grid;grid-template-columns:1fr 1fr;gap:4px 12px'>"
+  +"<div style='font-size:12px;font-weight:700;color:"+AMBB+";margin-bottom:4px'>✅ Compartir libremente</div>"
+  +"<div style='font-size:12px;font-weight:700;color:"+AMBB+";margin-bottom:4px'>🚫 Mantener privado</div>"
+  +["Plantillas de prompts de Okta","Investigación técnica genérica","Marcos de propuestas","Materiales de entrenamiento"]
+  .map(function(i){return "<div style='font-size:12px;color:"+AMBB+";line-height:1.5;padding-left:10px;position:relative'><span style='position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:"+AMBB+";display:block'></span>"+i+"</div>";}).join("")
+  +["Contexto de clientes específicos","Conversaciones financieras","Temas de RRHH o personal","Estrategia comercial"]
+  .map(function(i){return "<div style='font-size:12px;color:"+AMBB+";line-height:1.5;padding-left:10px;position:relative'><span style='position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:"+AMBB+";display:block'></span>"+i+"</div>";}).join("")
+  +"</div>"));
+
+// PÁGINA 9 — CASOS DE USO REALES
+pages[9]="<div style='padding:2.5rem 3rem'>"
++"<div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección 9</div>"
++"<h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:0.5rem'>Casos de uso reales</h2>"
++"<p style='font-size:15px;color:#444;line-height:1.7;max-width:600px;margin-bottom:1.5rem'>Ejemplos concretos de cómo Claude transforma el trabajo diario en TEC360. Cada caso muestra el problema real, cómo usarlo y qué resultado esperar.</p>"
++"<div style='max-width:700px'>"
++caseblock(AMB,AMBB,"💼 Ventas / preventa","1",
+  "Preparar un correo de seguimiento post-demo de Okta",
+  "Tuviste una demo con un prospecto de una empresa manufacturera. Estuvo interesado pero no ha respondido en 5 días. Quieres reactivar sin sonar desesperado ni genérico.",
+  "Escribe un correo de seguimiento para un prospecto que vio nuestra demo de Okta Workforce Identity hace 5 días y no ha respondido. La empresa es una manufacturera mediana (~500 empleados). En la demo le interesó especialmente el SSO y la gestión de accesos para contratistas externos. Tono cálido, directo, sin presionar. Máximo 80 palabras. Que termine con una pregunta abierta, no con 'avísame si tienes dudas'.",
+  "Un correo listo para enviar en 30 segundos, con el tono correcto y una pregunta que invita a responder. En lugar de 20 minutos pensando cómo no sonar genérico, Claude te da 3 versiones y tú eliges la mejor.")
++caseblock(AMB,AMBB,"💼 Ventas / preventa","2",
+  "Preparar respuestas a objeciones antes de una reunión",
+  "Tienes una reunión mañana con un prospecto que dijo 'ya tenemos Active Directory y Microsoft Entra, no veo por qué cambiar'. Necesitas estar preparado con argumentos sólidos y honestos.",
+  "Un prospecto del sector financiero dijo: 'Ya tenemos Active Directory y Microsoft Entra, no veo por qué cambiar'. Dame 4 respuestas honestas a esta objeción desde la perspectiva de un integrador certificado de Okta. Para cada una: el argumento, cómo conectarlo con el negocio del cliente, y una pregunta de discovery que me ayude a entender si realmente Okta les agrega valor. Sin exagerar las ventajas de Okta.",
+  "Argumentos estructurados, honestos y con preguntas de discovery incluidas. Llegas a la reunión preparado en lugar de improvisar. Tiempo: 3 minutos en lugar de buscar en Google y armar tus notas desde cero.")
++caseblock(GRN,GRNB,"📋 Consultores / PM","1",
+  "Convertir notas de reunión en un reporte de estatus para el cliente",
+  "Terminaste una reunión de seguimiento semanal. Tienes notas desordenadas. El cliente espera un resumen por correo antes de las 6pm y ya son las 5.",
+  "Tengo estas notas de una reunión de seguimiento de un proyecto de implementación de Okta. Convierte esto en un reporte de estatus ejecutivo para enviar al cliente. Incluye: resumen de avance, decisiones tomadas hoy, próximos pasos con responsable y fecha, y cualquier riesgo o bloqueador activo. Tono profesional pero directo. Máximo 300 palabras. [pegas tus notas — sin nombrar al cliente]",
+  "Un reporte limpio, estructurado y listo para copiar al correo en menos de 2 minutos. Lo que normalmente toma 30-40 minutos de redacción queda listo mientras revisas tu correo.")
++caseblock(GRN,GRNB,"📋 Consultores / PM","2",
+  "Estructurar una propuesta de implementación de Okta desde un brief",
+  "Saliste de una llamada de discovery con un prospecto y tomaste notas. Necesitas estructurar una propuesta completa pero no sabes por dónde empezar y tienes otros tres proyectos activos.",
+  "Voy a escribirte el contexto de un cliente potencial. Con base en eso, genera la estructura completa de una propuesta de implementación de Okta Workforce Identity. Contexto: empresa del sector logístico, ~800 empleados, problema principal es que cada sistema tiene usuario y contraseña diferente y han tenido 2 incidentes de seguridad por contraseñas débiles. Quieren SSO y MFA como prioridad. Tienen Office 365. Presupuesto no definido. Genera: estructura de la propuesta con secciones, qué debería ir en cada una, y sugerencias de los módulos de Okta más relevantes para este caso.",
+  "Una estructura completa lista para empezar a llenar. No partes de una hoja en blanco — partes de un esqueleto con lógica de negocio. Ahorras 1-2 horas de estructuración y llegas al contenido directamente.")
++caseblock(PRP,PRPB,"🔧 Ingenieros / Técnicos Okta","1",
+  "Documentar una integración técnica que acabas de configurar",
+  "Configuraste una integración entre Okta y una aplicación custom del cliente usando SAML 2.0. Funciona perfectamente, pero nadie más sabe cómo está configurada y si te llaman en vacaciones nadie puede dar soporte.",
+  "Acabo de configurar una integración entre Okta y una aplicación web custom usando SAML 2.0. Te voy a dar los detalles de configuración. Genera documentación técnica que incluya: descripción de la integración, prerrequisitos, parámetros SAML configurados y su propósito, flujo de autenticación paso a paso, errores comunes y cómo resolverlos, y notas de mantenimiento. Audiencia: ingenieros de nivel medio que no estuvieron en la implementación. [describes la configuración sin incluir datos del cliente]",
+  "Documentación completa lista para subir al repo o Wiki del equipo. Lo que normalmente nadie hace porque 'no hay tiempo' queda listo en 10 minutos. El conocimiento queda en la empresa, no en tu cabeza.")
++caseblock(PRP,PRPB,"🔧 Ingenieros / Técnicos Okta","2",
+  "Entender y diagnosticar un error técnico de Okta que no has visto antes",
+  "El cliente reporta un error en el flujo de login de Okta. El mensaje es críptico, no lo has visto antes y necesitas dar una respuesta rápida sin pasarte 2 horas en documentación.",
+  "El cliente está viendo este error en el flujo de login de Okta: [pega el mensaje de error]. El contexto es: tienen una integración SAML con [tipo de aplicación, sin nombrar al cliente]. El error aparece solo cuando el usuario viene de [condición específica]. ¿Qué lo puede estar causando? Dame las 3 causas más probables ordenadas por frecuencia, cómo verificar cada una, y el paso a seguir si ninguna aplica.",
+  "Un punto de partida estructurado para el diagnóstico en lugar de empezar desde cero. Importante: siempre valida lo que Claude dice contra documentación oficial de Okta antes de aplicar cambios en producción.")
++caseblock(BLU,BLUB,"💻 Desarrolladores","1",
+  "Revisar código de integración antes de entregarlo al cliente",
+  "Escribiste un script de integración con la API de Okta. Funciona en tu ambiente local pero quieres asegurarte de que no tiene bugs ni problemas de seguridad antes de subirlo al repositorio del cliente.",
+  "Revisa este código de integración con la API de Okta. Busca: (1) bugs o errores lógicos, (2) vulnerabilidades de seguridad — especialmente en el manejo de tokens y credenciales, (3) ausencia de manejo de errores, (4) malas prácticas de código. Para cada problema: describe el issue, califica su severidad como Alta/Media/Baja, y proporciona el código corregido. Si algo está bien, dímelo también. [pegas tu código]",
+  "Una revisión estructurada con prioridades claras. Como si tuvieras un senior developer mirando tu código antes de entregarlo. No reemplaza un code review humano en cambios críticos, pero detecta el 80% de los problemas comunes en segundos.")
++caseblock(GRY,GRYB,"📊 Finanzas / Admin","1",
+  "Categorizar y organizar el estado de cuenta AMEX del mes",
+  "El estado de cuenta AMEX llegó con 60 transacciones de diferentes tipos. Hay que categorizarlas, identificar cuáles van a cada entidad y preparar el resumen para el contador externo. Normalmente esto toma una tarde entera.",
+  "Tengo estas transacciones del estado de cuenta AMEX de [mes]. Categoriza cada una en: Viajes y Transporte, Alimentos y Entretenimiento, Software y Suscripciones, Servicios Profesionales, Oficina y Suministros, u Otros. Para cada transacción indica también si probablemente corresponde a TEC LLC o IAM LLC basándote en el giro del proveedor. Si hay transacciones ambiguas, márcalas con una bandera y explica por qué. Al final dame un resumen de totales por categoría. [pegas las transacciones — sin datos de clientes]",
+  "Una tabla categorizada lista para revisión, con totales y flags en lo ambiguo. Lo que toma una tarde se convierte en 15 minutos de revisión y ajuste. Siempre verifica las categorías antes de enviarlo al contador.")
++caseblock(GRY,GRYB,"👥 Todos los roles","Universal",
+  "Traducir un documento técnico o comercial al español mexicano",
+  "Recibes documentación técnica de Okta en inglés o tienes una propuesta que necesitas presentar en español a un cliente mexicano. La traducción directa suena rara y los términos técnicos quedan mal.",
+  "Traduce este documento al español mexicano. Es un [documento técnico de Okta / propuesta comercial / correo de seguimiento]. Reglas: mantén los términos técnicos en inglés cuando así se usan en la industria (ej: Single Sign-On, MFA, token, endpoint), usa español formal pero no rígido, y si algo suena extraño traducido deja el término en inglés con una breve explicación entre paréntesis. [pegas el documento]",
+  "Una traducción que suena natural en español mexicano, respeta los términos técnicos del sector y no pierde el tono original. En lugar de 45 minutos traduciendo manualmente, obtienes un borrador en 30 segundos que solo necesita una revisión rápida.")
++"</div>"
++"<div style='margin-top:16px;background:"+PRP+";border:1.5px solid "+PRPM+";border-radius:10px;padding:12px 16px;max-width:700px'>"
++"<div style='font-size:13px;color:"+PRPB+";line-height:1.7'>🛡️ <strong>Recordatorio ISO 27001:</strong> En todos los casos anteriores nota que nunca se mencionan nombres de clientes, datos específicos ni información confidencial. Siempre describe el contexto de forma genérica — Claude puede ayudarte igual sin necesitar los datos reales.</div>"
++"</div></div>";
+
+// PÁGINA 10 — INTEGRACIONES
+pages[10]=sec("Sección 10","Integraciones",
+"<p style='font-size:15px;color:#444;line-height:1.7;max-width:560px;margin-bottom:1.2rem'>Claude puede conectarse a herramientas externas y tomar acciones reales en tu nombre. Esto requiere gobernanza y cumple con ISO 27001.</p>"
++card(GRN,GRNB,GRNM,"✅ Integraciones autorizadas (aprobadas para uso)",
+  bullets(["Claude en PowerPoint — para propuestas y decks de Okta","Claude en Excel — para datos, modelos, rastreadores","Notion, Asana, Linear, Atlassian — gestión de proyectos y tareas","HubSpot — ventas y CRM (solo equipo de ventas, sin datos de clientes vía Claude)","Pregunta a tu administrador antes de conectar cualquier cosa que no esté en esta lista"],GRNM))
++card(RED,REDB,REDB,"🚫 Nunca conectes Claude a — requerimiento ISO 27001",
+  bullets(["Entornos de Okta de clientes (producción, staging o desarrollo)","Sistemas, portales o entornos de clientes de cualquier tipo","Plataformas bancarias o financieras","Sistemas de RRHH con datos de empleados","Cualquier sistema donde las acciones sean irreversibles sin tu revisión","Cuentas personales de ningún tipo"],REDB))
++"<div style='background:#111;border-radius:10px;padding:12px 16px'><div style='font-size:13px;color:#fff;line-height:1.7'>🔑 <strong>Claves de API:</strong> Nunca crees claves personales. Nunca las compartas. Todo el acceso a través de la cuenta de la empresa únicamente. Violaciones = incidentes de seguridad formales bajo ISO 27001.</div></div>");
+
+// PÁGINA 11 — QUÉ HACER Y NO HACER
+pages[11]=sec("Sección 11","Qué hacer y no hacer",
+"<div style='max-width:720px;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden'>"
++"<div style='display:grid;grid-template-columns:1fr 1fr'>"
++"<div style='background:"+GRN+";padding:9px 16px;font-size:12px;font-weight:700;color:"+GRNB+";letter-spacing:0.08em;text-transform:uppercase'>✅ Hacer</div>"
++"<div style='background:"+RED+";padding:9px 16px;font-size:12px;font-weight:700;color:"+REDB+";letter-spacing:0.08em;text-transform:uppercase;border-left:1px solid #e0e0e0'>🚫 No hacer</div>"
++[
+  ["Describir situaciones de forma genérica — Claude ayuda con la forma del problema","Pegar nombres de clientes, contratos o información confidencial (viola ISO 27001)"],
+  ["Configurar contexto (plantilla, audiencia, marca) antes de hacer el prompt en PPT/Excel","Hacer prompts en contexto vacío y esperar buen resultado"],
+  ["Migrar prompts y plantillas de ChatGPT a Proyectos de Claude esta semana","Seguir usando ChatGPT personal para cualquier tarea de trabajo"],
+  ["Verificar configuraciones de Okta contra documentación oficial antes de aplicar","Usar output técnico de Claude sin validar — puede ser incorrecto"],
+  ["Reportar cualquier incidente de seguridad relacionado con Claude de inmediato","Manejar incidentes de seguridad de forma individual sin reportar"],
+  ["Agregar prompts útiles a la base de conocimiento compartida del equipo","Conectar Claude a entornos de clientes o herramientas no autorizadas"],
+  ["Iterar en la misma conversación — construir sobre lo que funciona","Compartir claves de API, credenciales o accesos de ningún tipo"]
+].map(function(r,i){
+  return "<div style='background:"+(i%2===0?"#fff":"#f9fdf9")+";padding:9px 16px;font-size:13px;color:#333;line-height:1.5;border-top:0.5px solid #eee'>"
+    +"<span style='color:"+GRNM+";margin-right:5px'>→</span>"+r[0]+"</div>"
+    +"<div style='background:"+(i%2===0?"#fff":"#fff9f9")+";padding:9px 16px;font-size:13px;color:#333;line-height:1.5;border-top:0.5px solid #eee;border-left:1px solid #e0e0e0'>"
+    +"<span style='color:"+REDM+";margin-right:5px'>→</span>"+r[1]+"</div>";
+}).join("")
++"</div></div>");
+
+// PÁGINA 12 — QUIZ
+pages[12]="<div style='padding:2.5rem 3rem'>"
++"<div style='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:"+GRYM+";margin-bottom:0.5rem'>Sección final</div>"
++"<h2 style='font-size:28px;font-weight:700;color:#111;margin-bottom:0.5rem'>Verificación final</h2>"
++"<p style='font-size:15px;color:#444;line-height:1.7;max-width:540px;margin-bottom:1.5rem'>5 escenarios. Elige la mejor respuesta. Es un registro formal de tu entrenamiento ISO 27001. Complétala antes de usar Claude para tareas de trabajo.</p>"
++"<div id='quiz-area'></div>"
++"<div id='quiz-result'></div>"
++"</div>";
+
+// DATOS DEL QUIZ
+var quizData=[
+  {q:"Un cliente te envía un contrato en PDF para revisar. ¿Puedes pegar el texto completo en Claude?",
+   a:1,
+   opts:["Sí, Claude puede ayudar a revisarlo","No — la información de clientes no debe compartirse con herramientas de IA","Solo si el cliente lo autoriza por escrito"],
+   exp:"Documentos de clientes no deben pegarse en Claude. Es también un requerimiento ISO 27001. Describe la situación de forma genérica."},
+  {q:"Tienes historial útil en ChatGPT con prompts y contexto de proyectos. ¿Qué debes hacer?",
+   a:2,
+   opts:["Seguir usando ChatGPT para esos proyectos — ya tiene el contexto","Borrar todo inmediatamente","Exportar el historial, extraer prompts útiles y reconstruirlos como Proyectos en Claude"],
+   exp:"Las cuentas personales de IA ya no están permitidas. Exporta, extrae lo útil y migralo a Proyectos de Claude. Hacerlo esta semana es obligatorio."},
+  {q:"Vas a usar Claude en PowerPoint para armar una propuesta de Okta. ¿Qué haces primero?",
+   a:1,
+   opts:["Describes lo que quieres y dejas que Claude lo resuelva","Subes tu plantilla, lineamientos de marca y contenido existente — luego escribes el prompt","Abres una presentación en blanco y pides a Claude que empiece desde cero"],
+   exp:"Claude en PPT funciona mejor con contexto. Agrega tu plantilla, notas de marca y contenido existente antes de hacer el prompt. Más contexto = mejor resultado."},
+  {q:"Detectas que accidentalmente pegaste información confidencial de un cliente en Claude. ¿Qué haces?",
+   a:1,
+   opts:["Lo ignoras — probablemente no pasa nada","Reportas de inmediato a tu líder y al responsable de seguridad — ISO 27001 exige registro formal","Borras la conversación y no lo mencionas"],
+   exp:"ISO 27001 exige que todos los incidentes de seguridad se reporten de inmediato. No manejes incidentes de forma individual ni borres evidencia hasta que se indique."},
+  {q:"Claude te da una respuesta muy segura sobre una configuración de Okta. ¿Qué haces?",
+   a:2,
+   opts:["La uso — Claude conoce bien Okta","La marco para revisión y la verifico con documentación oficial o un compañero experto","Le pido a Claude que lo confirme una vez más"],
+   exp:"Claude puede inventar detalles técnicos de Okta con mucha confianza. Siempre valida contra documentación oficial de Okta o con un colega antes de aplicar cambios."}
+];
+
+var answers={};
+var submitted=false;
+
+function renderQuiz(){
+  if(submitted) return;
+  var h="<div style='display:flex;flex-direction:column;gap:16px;max-width:640px'>";
+  quizData.forEach(function(q,qi){
+    h+="<div style='background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.1rem 1.4rem'>";
+    h+="<div style='font-size:14px;font-weight:700;color:#111;margin-bottom:10px;line-height:1.5'>"+(qi+1)+". "+q.q+"</div>";
+    h+="<div style='display:flex;flex-direction:column;gap:7px'>";
+    q.opts.forEach(function(o,oi){
+      var chosen=answers[qi]===oi;
+      h+="<button onclick='pick("+qi+","+oi+")' style='background:"+(chosen?BLU:"#f9f9f9")+";border:1px solid "+(chosen?BLUM:"#e0e0e0")+";border-radius:8px;padding:8px 14px;font-size:13px;text-align:left;cursor:pointer;color:"+(chosen?BLUB:"#444")+";font-family:inherit;line-height:1.5'>"+o+"</button>";
+    });
+    h+="</div></div>";
+  });
+  h+="</div>";
+  var done=Object.keys(answers).length===quizData.length;
+  h+="<button onclick='submitQ()' style='margin-top:16px;background:"+(done?"#111":"#ccc")+";color:#fff;border:none;border-radius:10px;padding:11px 26px;font-size:14px;font-weight:700;cursor:"+(done?"pointer":"default")+";font-family:inherit'>Enviar respuestas</button>";
+  document.getElementById("quiz-area").innerHTML=h;
+}
+
+function pick(qi,oi){
+  if(submitted) return;
+  answers[qi]=oi;
+  renderQuiz();
+}
+
+function submitQ(){
+  if(Object.keys(answers).length<quizData.length) return;
+  submitted=true;
+  var score=0;
+  var h="<div style='display:flex;flex-direction:column;gap:12px;max-width:640px'>";
+  quizData.forEach(function(q,qi){
+    var correct=answers[qi]===q.a;
+    if(correct) score++;
+    var bg=correct?GRN:RED;
+    var tc=correct?GRNB:REDB;
+    h+="<div style='background:"+bg+";border-radius:10px;padding:12px 16px'>";
+    h+="<div style='font-size:13px;font-weight:700;color:"+tc+";margin-bottom:4px'>"+(qi+1)+". "+(correct?"✅ Correcto":"❌ Incorrecto — Respuesta correcta: "+q.opts[q.a])+"</div>";
+    h+="<div style='font-size:13px;color:"+tc+";line-height:1.5'>"+q.exp+"</div></div>";
+  });
+  h+="</div>";
+  var resultBg=score>=4?GRN:score===3?AMB:RED;
+  var resultTc=score>=4?GRNB:score===3?AMBB:REDB;
+  var msg=score===5
+    ?"Perfecto. Estás listo. Usa Claude con responsabilidad y protege nuestra certificación ISO 27001."
+    :score>=4?"Muy bien — revisa las preguntas que fallaste antes de empezar a usar Claude para trabajo."
+    :score===3?"Vuelve a leer las secciones de Seguridad e ISO 27001 antes de usar Claude para trabajo."
+    :"Por favor repasa toda la guía antes de usar Claude para trabajo. Es obligatorio.";
+  document.getElementById("quiz-area").innerHTML="";
+  document.getElementById("quiz-result").innerHTML=
+    "<div style='background:"+resultBg+";border:1.5px solid "+resultTc+";border-radius:12px;padding:1.1rem 1.4rem;max-width:440px;margin-bottom:20px'>"
+    +"<div style='font-size:24px;font-weight:700;color:"+resultTc+";margin-bottom:4px'>"+score+" / "+quizData.length+"</div>"
+    +"<div style='font-size:14px;color:"+resultTc+";line-height:1.6'>"+msg+"</div></div>"
+    +h;
+}
+
+// NAVEGACIÓN
+function go(i){
+  c=i;
+  document.querySelectorAll(".nb").forEach(function(b,j){b.classList.toggle("on",j===i)});
+  document.getElementById("ct").innerHTML=pages[i];
+  document.getElementById("pg").textContent=(i+1)+" / "+N;
+  document.getElementById("pb").disabled=i===0;
+  document.getElementById("nx").disabled=i===N-1;
+  document.getElementById("ct").scrollTop=0;
+  if(i===12){ answers={}; submitted=false; renderQuiz(); }
+}
+function next(){ if(c<N-1) go(c+1); }
+function prev(){ if(c>0) go(c-1); }
+go(0);
+</script>
+</body>
+</html>
